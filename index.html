@@ -3,106 +3,465 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProMedical Booking</title>
+    <title>ProMedical Booking System</title>
     <style>
-        :root {
-            --primary: #4a90e2;
-            --secondary: #50c878;
-            --dark: #2c3e50;
+        :root { 
+            --primary: #4a90e2; 
+            --secondary: #50c878; 
+            --dark: #2c3e50; 
             --light: #f8f9fa;
+            --danger: #e74c3c;
         }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #eef2f7; margin: 0; padding: 20px; color: var(--dark); }
-        .container { max-width: 500px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .container { max-width: 550px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         
         /* Animations */
-        .step { display: none; animation: fadeIn 0.5s ease-in-out; }
+        .step { display: none; animation: fadeIn 0.4s ease-in-out; }
         .step.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Modern Inputs & Buttons */
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #e1e8ed; border-radius: 10px; transition: 0.3s; }
-        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 8px rgba(74, 144, 226, 0.2); }
-        
-        button { 
-            padding: 12px 25px; border: none; border-radius: 10px; cursor: pointer; 
-            transition: all 0.3s ease; font-weight: bold; transform: scale(1);
-        }
-        button:hover { transform: scale(1.03); filter: brightness(1.1); }
+        /* Form Controls */
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #e1e8ed; border-radius: 10px; box-sizing: border-box; transition: 0.3s; font-size: 14px; }
+        input:focus, select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 8px rgba(74, 144, 226, 0.2); }
+        label { font-weight: 600; font-size: 13px; color: #555; display: block; margin-top: 10px; }
+
+        /* Buttons */
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        button { padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; transition: all 0.3s ease; font-weight: bold; font-size: 14px; width: 100%; }
+        button:hover { transform: translateY(-2px); filter: brightness(1.1); }
         button:active { transform: scale(0.98); }
         
-        .btn-primary { background: var(--primary); color: white; width: 100%; }
-        .btn-success { background: var(--secondary); color: white; width: 100%; }
-        .btn-back { background: transparent; color: #7f8c8d; text-decoration: underline; margin-top: 10px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--secondary); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-back { background: #6c757d; color: white; }
+        .btn-link { background: none; border: none; color: var(--primary); text-decoration: underline; cursor: pointer; margin-top: 10px; width: auto; display: inline-block; }
+
+        h2, h3 { text-align: center; color: var(--primary); }
         
-        h2 { text-align: center; color: var(--primary); }
-        .doc-card { background: #f9f9f9; padding: 15px; border-radius: 15px; margin: 10px 0; border-left: 5px solid var(--primary); transition: 0.3s; }
-        .doc-card:hover { background: #edf4fd; }
+        /* Cards & Tables */
+        .doc-card { background: #f9f9f9; padding: 15px; border-radius: 12px; margin-bottom: 12px; border-left: 5px solid var(--primary); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; font-size: 13px; }
+        th { background: var(--primary); color: white; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>🏥 ProMedical</h2>
-    
-    <!-- Step 0: Welcome -->
+
+    <!-- Step 0: Home Page -->
     <div id="step-0" class="step active">
-        <p style="text-align: center;">Professional medical booking system at your fingertips.</p>
-        <button class="btn-primary" onclick="nextStep(1)">Start Booking</button>
-        <button class="btn-back" style="display:block; margin: 10px auto;" onclick="showLoginSection()">Are you a Doctor?</button>
+        <p style="text-align: center; color: #666; font-size: 15px;">Welcome to the professional medical booking platform.</p>
+        <button class="btn-primary" onclick="nextStep(1)">Book an Appointment</button>
+        <div style="text-align: center; margin-top: 15px;">
+            <button class="btn-link" onclick="showLoginSection()">Are you a Doctor? Log in</button>
+        </div>
     </div>
 
     <!-- Step 1: Patient Info -->
     <div id="step-1" class="step">
-        <h3>Patient Details</h3>
-        <input type="text" id="firstName" placeholder="First Name">
-        <input type="text" id="lastName" placeholder="Last Name">
-        <input type="tel" id="phone" placeholder="Phone Number">
-        <button class="btn-primary" onclick="validateStep1()">Next</button>
+        <h3>Patient Information</h3>
+        <label>First Name:</label>
+        <input type="text" id="firstName" placeholder="Enter first name">
+        
+        <label>Last Name:</label>
+        <input type="text" id="lastName" placeholder="Enter last name">
+        
+        <label>Phone Number:</label>
+        <input type="tel" id="phone" placeholder="05xxxxxxxx">
+        
+        <label>Email (for confirmation):</label>
+        <input type="email" id="email" placeholder="example@domain.com">
+
+        <div class="btn-group">
+            <button class="btn-back" onclick="nextStep(0)">Back</button>
+            <button class="btn-primary" onclick="validateStep1()">Next</button>
+        </div>
     </div>
 
-    <!-- Step 2: Location & Type -->
+    <!-- Step 2: Location -->
     <div id="step-2" class="step">
-        <h3>Find your Doctor</h3>
-        <input type="text" id="state" placeholder="State (Wilaya)">
-        <input type="text" id="municipality" placeholder="Municipality">
+        <h3>Select Location</h3>
+        <label>State (Wilaya):</label>
+        <input type="text" id="state" placeholder="Enter state">
+
+        <label>District (Daïra):</label>
+        <input type="text" id="circle" placeholder="Enter district">
+
+        <label>Municipality (Baladiya):</label>
+        <input type="text" id="municipality" placeholder="Enter municipality">
+
+        <div class="btn-group">
+            <button class="btn-back" onclick="nextStep(1)">Back</button>
+            <button class="btn-primary" onclick="nextStep(3)">Next</button>
+        </div>
+    </div>
+
+    <!-- Step 3: Doctor Type -->
+    <div id="step-3" class="step">
+        <h3>Doctor Specialty</h3>
+        <label>Select Type:</label>
         <select id="doctorType" onchange="toggleSpecialty()">
             <option value="General">General Practitioner</option>
             <option value="Specialist">Specialist</option>
         </select>
-        <input type="text" id="specialty" placeholder="Specialty (if any)" style="display:none;">
-        <button class="btn-primary" onclick="fetchAvailableDoctors()">Search Doctors</button>
-        <button class="btn-back" onclick="nextStep(1)">Back</button>
+
+        <div id="specialtyContainer" style="display: none;">
+            <label>Specialty:</label>
+            <input type="text" id="specialty" placeholder="e.g., Pediatrics, Dentist">
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-back" onclick="nextStep(2)">Back</button>
+            <button class="btn-primary" onclick="fetchAvailableDoctors()">Search Doctors</button>
+        </div>
     </div>
 
-    <!-- Step 4: Results -->
+    <!-- Step 4: Doctor Selection & Date -->
     <div id="step-4" class="step">
-        <h3>Available Doctors</h3>
-        <div id="doctorsListContainer"></div>
-        <button class="btn-back" onclick="nextStep(2)">Back</button>
+        <h3>Select Doctor & Date</h3>
+        <label>Available Doctors:</label>
+        <div id="doctorsListContainer" style="max-height: 220px; overflow-y: auto; border: 1px solid #e1e8ed; padding: 10px; border-radius: 10px; background: #fafafa; margin-bottom: 10px;">
+            <p style="color: #666; text-align: center;">No doctors loaded yet.</p>
+        </div>
+
+        <input type="hidden" id="selectedDoctorName">
+        <p id="chosenDoctorDisplay" style="font-weight: bold; color: var(--secondary); text-align: center; margin: 5px 0;"></p>
+
+        <label>Appointment Date & Time:</label>
+        <input type="datetime-local" id="appointmentDate">
+
+        <div class="btn-group">
+            <button class="btn-back" onclick="nextStep(3)">Back</button>
+            <button class="btn-success" onclick="submitBooking()">Confirm Booking</button>
+        </div>
     </div>
+
+    <!-- Doctor Login -->
+    <div id="doctor-login-section" class="step">
+        <h3>Doctor Login</h3>
+        <label>Email:</label>
+        <input type="email" id="loginEmail" placeholder="Enter email">
+        
+        <label>Password:</label>
+        <input type="password" id="loginPassword" placeholder="Enter password">
+
+        <div class="btn-group">
+            <button class="btn-back" onclick="nextStep(0)">Home</button>
+            <button class="btn-primary" onclick="doctorLogin()">Login</button>
+        </div>
+        
+        <div style="text-align: center; margin-top: 15px;">
+            <button class="btn-link" onclick="showForgotPasswordSection()">Forgot Password?</button><br>
+            <button class="btn-link" onclick="showSignUpSection()">Don't have an account? Sign Up</button>
+        </div>
+    </div>
+
+    <!-- Forgot Password -->
+    <div id="doctor-forgot-section" class="step">
+        <h3>Reset Password</h3>
+        <div id="forgotStep1">
+            <label>Registered Email:</label>
+            <input type="email" id="resetEmail" placeholder="example@domain.com">
+            <div class="btn-group">
+                <button class="btn-back" onclick="showLoginSection()">Cancel</button>
+                <button class="btn-primary" onclick="sendResetCode()">Send Code</button>
+            </div>
+        </div>
+        <div id="forgotStep2" style="display: none;">
+            <label>4-digit Code:</label>
+            <input type="text" id="enteredCode" placeholder="Enter code">
+            <label>New Password:</label>
+            <input type="password" id="newPassword" placeholder="New password">
+            <div class="btn-group">
+                <button class="btn-back" onclick="showLoginSection()">Cancel</button>
+                <button class="btn-success" onclick="verifyAndResetPassword()">Update</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Doctor Sign Up -->
+    <div id="doctor-signup-section" class="step">
+        <h3>Doctor Sign Up</h3>
+        <label>First Name:</label>
+        <input type="text" id="docFirstName" placeholder="First Name">
+        <label>Last Name:</label>
+        <input type="text" id="docLastName" placeholder="Last Name">
+        <label>Phone:</label>
+        <input type="tel" id="docPhone" placeholder="Phone">
+        <label>Email:</label>
+        <input type="email" id="docEmail" placeholder="Email">
+        <label>Password:</label>
+        <input type="password" id="docPassword" placeholder="Password">
+        <label>State:</label>
+        <input type="text" id="docState" placeholder="State">
+        <label>District:</label>
+        <input type="text" id="docCircle" placeholder="District">
+        <label>Municipality:</label>
+        <input type="text" id="docMunicipality" placeholder="Municipality">
+        <label>Clinic Address:</label>
+        <input type="text" id="docAddress" placeholder="Street / Landmark">
+        <label>Type:</label>
+        <select id="docType" onchange="toggleDocSpecialty()">
+            <option value="General">General</option>
+            <option value="Specialist">Specialist</option>
+        </select>
+        <div id="docSpecialtyContainer" style="display: none;">
+            <label>Specialty:</label>
+            <input type="text" id="docSpecialty" placeholder="Specialty">
+        </div>
+        <div class="btn-group">
+            <button class="btn-back" onclick="showLoginSection()">Back</button>
+            <button class="btn-success" onclick="doctorSignUp()">Register</button>
+        </div>
+    </div>
+
+    <!-- Doctor Dashboard -->
+    <div id="doctor-dashboard" class="step">
+        <h3>Doctor Dashboard</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <span id="welcomeDocName" style="font-weight: bold; color: var(--primary);"></span>
+            <div>
+                <button class="btn-danger" onclick="deleteDoctorAccount()" style="padding: 6px 10px; font-size: 12px; width: auto;">Delete Account</button>
+                <button class="btn-back" onclick="logoutDoctor()" style="padding: 6px 10px; font-size: 12px; width: auto;">Logout</button>
+            </div>
+        </div>
+        <h4>Booked Appointments:</h4>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>First</th>
+                        <th>Last</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="appointmentsList">
+                    <tr><td colspan="5">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
 
 <script>
+    // ضع رابط الـ Web App الخاص بك هنا بدل النص بين العلامتين
     const scriptURL = 'https://script.google.com/macros/s/AKfycbzNEPYYi95HjeeYV9h-Iy0ktNXYM2tChQSUAh8unXOrZ6vgNHvEukW_2py58n_dkH2b/exec';
+    
+    let currentStep = 0;
+    let loggedInDoctorName = "";
+    let loggedInDoctorEmail = "";
+    let resetTargetEmail = "";
 
     function nextStep(step) {
         document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
-        document.getElementById(`step-${step}`).classList.add('active');
+        currentStep = step;
+        document.getElementById(`step-${currentStep}`).classList.add('active');
+    }
+
+    function showLoginSection() {
+        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+        document.getElementById('doctor-login-section').classList.add('active');
+    }
+
+    function showSignUpSection() {
+        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+        document.getElementById('doctor-signup-section').classList.add('active');
+    }
+
+    function showForgotPasswordSection() {
+        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+        document.getElementById('doctor-forgot-section').classList.add('active');
+        document.getElementById('forgotStep1').style.display = 'block';
+        document.getElementById('forgotStep2').style.display = 'none';
+    }
+
+    function validateStep1() {
+        if(!document.getElementById('firstName').value || !document.getElementById('phone').value) {
+            alert('Please fill in your name and phone number.');
+            return;
+        }
+        nextStep(2);
     }
 
     function toggleSpecialty() {
-        document.getElementById('specialty').style.display = 
-            (document.getElementById('doctorType').value === 'Specialist') ? 'block' : 'none';
+        document.getElementById('specialtyContainer').style.display = (document.getElementById('doctorType').value === 'Specialist') ? 'block' : 'none';
+    }
+
+    function toggleDocSpecialty() {
+        document.getElementById('docSpecialtyContainer').style.display = (document.getElementById('docType').value === 'Specialist') ? 'block' : 'none';
+    }
+
+    function doctorSignUp() {
+        const docData = {
+            action: 'signup',
+            firstName: document.getElementById('docFirstName').value,
+            lastName: document.getElementById('docLastName').value,
+            phone: document.getElementById('docPhone').value,
+            email: document.getElementById('docEmail').value,
+            password: document.getElementById('docPassword').value,
+            state: document.getElementById('docState').value,
+            circle: document.getElementById('docCircle').value,
+            municipality: document.getElementById('docMunicipality').value,
+            address: document.getElementById('docAddress').value,
+            type: document.getElementById('docType').value,
+            specialty: document.getElementById('docSpecialty').value
+        };
+
+        if(!docData.email || !docData.password || !docData.firstName) {
+            alert('Please fill in required fields.');
+            return;
+        }
+
+        alert('Creating account...');
+        fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(docData) })
+        .then(() => { alert('Account created successfully!'); showLoginSection(); })
+        .catch(err => alert('Error: ' + err));
+    }
+
+    function doctorLogin() {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPassword').value;
+        if(!email || !pass) { alert('Enter email and password.'); return; }
+
+        alert('Verifying...');
+        fetch(scriptURL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'login', email, password: pass }) })
+        .then(res => res.json())
+        .then(data => {
+            if(data.result === 'success') {
+                loggedInDoctorName = data.doctor.fullName;
+                loggedInDoctorEmail = data.doctor.email;
+                document.getElementById('welcomeDocName').innerText = `Welcome, ${loggedInDoctorName}`;
+                document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+                document.getElementById('doctor-dashboard').classList.add('active');
+                fetchAppointments(loggedInDoctorName);
+            } else { alert(data.message); }
+        }).catch(() => alert('Login error.'));
+    }
+
+    function sendResetCode() {
+        const email = document.getElementById('resetEmail').value;
+        if(!email) { alert('Enter email.'); return; }
+        resetTargetEmail = email;
+        alert('Sending code...');
+        fetch(scriptURL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'send_code', email }) })
+        .then(res => res.json())
+        .then(data => {
+            if(data.result === 'success') {
+                alert('Code sent to email.');
+                document.getElementById('forgotStep1').style.display = 'none';
+                document.getElementById('forgotStep2').style.display = 'block';
+            } else { alert(data.message); }
+        });
+    }
+
+    function verifyAndResetPassword() {
+        const code = document.getElementById('enteredCode').value;
+        const newPassword = document.getElementById('newPassword').value;
+        if(!code || !newPassword) { alert('Fill all fields.'); return; }
+
+        fetch(scriptURL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'reset_password', email: resetTargetEmail, code, newPassword }) })
+        .then(res => res.json())
+        .then(data => {
+            if(data.result === 'success') { alert('Password updated!'); showLoginSection(); }
+            else { alert(data.message); }
+        });
+    }
+
+    function deleteDoctorAccount() {
+        if(confirm('Are you sure?')) {
+            fetch(scriptURL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'delete_account', email: loggedInDoctorEmail }) })
+            .then(res => res.json())
+            .then(data => { if(data.result === 'success') { alert('Deleted.'); logoutDoctor(); } });
+        }
     }
 
     function fetchAvailableDoctors() {
-        // [نفس كود جلب البيانات السابق مع تحديث الـ HTML لعرض doc-card]
-        // يمكنك إكمال باقي الوظائف بنفس المنطق السابق مع إضافة كلاس doc-card للعناصر
+        const state = document.getElementById('state').value;
+        const municipality = document.getElementById('municipality').value;
+        const type = document.getElementById('doctorType').value;
+        const specialty = document.getElementById('specialty').value || '';
+
+        if(!state || !municipality) { alert('Fill location fields.'); return; }
+
         alert('Searching...');
-        nextStep(4);
+        fetch(`${scriptURL}?action=get_doctors&state=${encodeURIComponent(state)}&municipality=${encodeURIComponent(municipality)}&type=${encodeURIComponent(type)}&specialty=${encodeURIComponent(specialty)}`)
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById('doctorsListContainer');
+            container.innerHTML = '';
+            if(data.length === 0) {
+                container.innerHTML = '<p style="color: red; text-align: center;">No doctors found.</p>';
+                nextStep(4);
+                return;
+            }
+            data.forEach(doc => {
+                const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${doc.fullName} clinic ${doc.municipality} ${doc.state}`)}`;
+                container.innerHTML += `
+                    <div class="doc-card">
+                        <div>
+                            <strong>${doc.fullName}</strong> (${doc.type} ${doc.specialty ? '- ' + doc.specialty : ''})<br>
+                            <small>📍 ${doc.address || 'No address'}</small><br>
+                            <a href="${mapUrl}" target="_blank" style="color: var(--primary); font-size: 12px;">Google Maps 🗺️</a>
+                        </div>
+                        <button class="btn-success" style="width: auto; padding: 6px 12px;" onclick="selectDoctor('${doc.fullName}')">Select</button>
+                    </div>`;
+            });
+            nextStep(4);
+        });
     }
-    
-    // تأكد من ربط الرابط في الأعلى بنفس الطريقة السابقة
+
+    function selectDoctor(docName) {
+        document.getElementById('selectedDoctorName').value = docName;
+        document.getElementById('chosenDoctorDisplay').innerText = `Selected: ${docName}`;
+        alert(`Selected ${docName}. Now choose date.`);
+    }
+
+    function submitBooking() {
+        const bookingData = {
+            action: 'book',
+            firstName: document.getElementById('firstName').value,
+            lastName: document.getElementById('lastName').value,
+            phone: document.getElementById('phone').value,
+            email: document.getElementById('email').value,
+            state: document.getElementById('state').value,
+            doctor: document.getElementById('selectedDoctorName').value,
+            appointmentDate: document.getElementById('appointmentDate').value
+        };
+
+        if(!bookingData.email || !bookingData.appointmentDate || !bookingData.doctor) {
+            alert('Complete email, doctor selection, and date.');
+            return;
+        }
+
+        alert('Confirming booking...');
+        fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(bookingData) })
+        .then(() => { alert('Booked successfully!'); location.reload(); });
+    }
+
+    function fetchAppointments(doctorName) {
+        fetch(`${scriptURL}?doctorName=${encodeURIComponent(doctorName)}`)
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById('appointmentsList');
+            tbody.innerHTML = '';
+            if(data.length === 0) { tbody.innerHTML = '<tr><td colspan="5">No appointments.</td></tr>'; return; }
+            data.forEach(app => {
+                tbody.innerHTML += `<tr><td>${app.firstName}</td><td>${app.lastName}</td><td>${app.phone}</td><td>${app.email}</td><td>${app.appointmentDate}</td></tr>`;
+            });
+        });
+    }
+
+    function logoutDoctor() {
+        loggedInDoctorName = "";
+        loggedInDoctorEmail = "";
+        nextStep(0);
+    }
 </script>
 </body>
 </html>
