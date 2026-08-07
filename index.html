@@ -32,6 +32,11 @@
         input:focus, select:focus { border-color: var(--primary); outline: none; background: #fff; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
         label { font-weight: 600; font-size: 14px; color: #475569; display: block; margin-top: 10px; }
 
+        /* حاوية حقل كلمة المرور مع زر العين */
+        .password-wrapper { position: relative; }
+        .password-wrapper input { padding-right: 45px; }
+        .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #64748b; font-size: 18px; user-select: none; }
+
         .btn-group { display: flex; gap: 15px; margin-top: 25px; }
         button { padding: 14px 24px; border: none; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; font-weight: 600; font-size: 15px; width: 100%; }
         button:hover { transform: translateY(-2px); filter: brightness(1.05); }
@@ -146,7 +151,13 @@
         <h3>Doctor Login</h3>
         <div style="max-width: 400px; margin: auto;">
             <label>Email:</label><input type="email" id="loginEmail" placeholder="Email">
-            <label>Password:</label><input type="password" id="loginPassword" placeholder="Password">
+            
+            <label>Password:</label>
+            <div class="password-wrapper">
+                <input type="password" id="loginPassword" placeholder="Password">
+                <span class="toggle-password" onclick="togglePasswordVisibility('loginPassword', this)">👁️</span>
+            </div>
+
             <div class="btn-group">
                 <button class="btn-back" onclick="nextStep(0)">Home</button>
                 <button class="btn-primary" onclick="doctorLogin()">Login</button>
@@ -165,9 +176,25 @@
             <div><label>Last Name:</label><input type="text" id="docLastName" placeholder="Last Name"></div>
             <div><label>Phone:</label><input type="tel" id="docPhone" placeholder="Phone"></div>
             <div><label>Email:</label><input type="email" id="docEmail" placeholder="Email"></div>
-            <div class="full-width"><label>Password:</label><input type="password" id="docPassword" placeholder="Password"></div>
             
-            <!-- القوائم المترابطة للتسجيل -->
+            <!-- كلمة المرور مع زر العين -->
+            <div>
+                <label>Password:</label>
+                <div class="password-wrapper">
+                    <input type="password" id="docPassword" placeholder="Password">
+                    <span class="toggle-password" onclick="togglePasswordVisibility('docPassword', this)">👁️</span>
+                </div>
+            </div>
+
+            <!-- تأكيد كلمة المرور مع زر العين -->
+            <div>
+                <label>Confirm Password:</label>
+                <div class="password-wrapper">
+                    <input type="password" id="docConfirmPassword" placeholder="Confirm Password">
+                    <span class="toggle-password" onclick="togglePasswordVisibility('docConfirmPassword', this)">👁️</span>
+                </div>
+            </div>
+            
             <div class="full-width"><label>State (Wilaya):</label><select id="docState" onchange="updateDocDistricts()"><option value="">Select State</option></select></div>
             <div class="full-width"><label>Municipality (Baladiya):</label><select id="docMunicipality"><option value="">Select Municipality</option></select></div>
             
@@ -214,7 +241,7 @@
     const scriptURL = 'https://script.google.com/macros/s/AKfycbwQEtns8VCPKCNG2NJ6bXH-WtPP40lL3_ZgmpR2-ZXjWcejplEOWi1_9W-25XeGGFSU/exec';
     let settingsData = [];
 
-    // تحميل إعدادات الأماكن والتخصصات من الشيت عند فتح الصفحة
+    // جلب الإعدادات
     fetch(`${scriptURL}?action=get_settings`)
         .then(res => res.json())
         .then(data => {
@@ -241,6 +268,18 @@
         populateSelect('docMunicipality', munis);
         let specs = [...new Set(settingsData.filter(i => i[0] === state).map(i => i[3]).filter(Boolean))];
         populateSelect('docSpecialty', specs);
+    }
+
+    // دالة إظهار وإخفاء كلمة المرور (العين)
+    function togglePasswordVisibility(fieldId, iconElement) {
+        const inputField = document.getElementById(fieldId);
+        if (inputField.type === 'password') {
+            inputField.type = 'text';
+            iconElement.textContent = '🙈';
+        } else {
+            inputField.type = 'password';
+            iconElement.textContent = '👁️';
+        }
     }
 
     function nextStep(step) {
@@ -280,13 +319,21 @@
     }
 
     function doctorSignUp() {
+        const pass = document.getElementById('docPassword').value;
+        const confirmPass = document.getElementById('docConfirmPassword').value;
+
+        if (pass !== confirmPass) {
+            alert('Passwords do not match! Please check again.');
+            return;
+        }
+
         const docData = {
             action: 'signup',
             firstName: document.getElementById('docFirstName').value,
             lastName: document.getElementById('docLastName').value,
             phone: document.getElementById('docPhone').value,
             email: document.getElementById('docEmail').value,
-            password: document.getElementById('docPassword').value,
+            password: pass,
             state: document.getElementById('docState').value,
             circle: '',
             municipality: document.getElementById('docMunicipality').value,
