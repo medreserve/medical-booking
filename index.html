@@ -1,476 +1,86 @@
-<!-- --- 2. كود واجهة index.html الكامل --- -->
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Appointment System</title>
+    <base target="_top">
     <style>
-        :root { --primary: #2563eb; --secondary: #10b981; --dark: #1e293b; --light: #f8fafc; --danger: #ef4444; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f1f5f9; margin: 0; padding: 0; color: var(--dark); display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { width: 100%; max-width: 900px; min-height: 520px; margin: 20px; background: white; padding: 40px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.06); box-sizing: border-box; }
-        .step { display: none; animation: fadeIn 0.4s ease-in-out; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .step { display: none; }
         .step.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .full-width { grid-column: span 2; }
-        input, select { width: 100%; padding: 14px; margin: 8px 0; border: 2px solid #e2e8f0; border-radius: 12px; box-sizing: border-box; font-size: 15px; background: #fafafa; }
-        input:focus, select:focus { border-color: var(--primary); outline: none; background: #fff; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
-        label { font-weight: 600; font-size: 14px; color: #475569; display: block; margin-top: 10px; }
-        .password-wrapper { position: relative; }
-        .password-wrapper input { padding-right: 45px; }
-        .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #64748b; font-size: 18px; }
-        .btn-group { display: flex; gap: 15px; margin-top: 25px; }
-        button { padding: 14px 24px; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 15px; width: 100%; transition: 0.3s; }
-        button:hover { filter: brightness(1.05); transform: translateY(-2px); }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-success { background: var(--secondary); color: white; }
-        .btn-back { background: #e2e8f0; color: #475569; width: auto; padding: 14px 30px; }
-        .btn-link { background: none; border: none; color: var(--primary); text-decoration: underline; cursor: pointer; margin-top: 15px; width: auto; display: inline-block; font-size: 14px; }
-        h2, h3 { color: var(--primary); margin-top: 0; font-size: 26px; text-align: center; margin-bottom: 25px; }
-        .doc-card { background: #f8fafc; padding: 20px; border-radius: 16px; margin-bottom: 15px; border-left: 6px solid var(--primary); display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: center; font-size: 14px; }
-        th { background: var(--primary); color: white; }
-        .dashboard-nav { display: flex; gap: 10px; margin-bottom: 20px; }
-        .dashboard-nav button { background: #e2e8f0; color: #334155; }
-        .dashboard-nav button.active-tab { background: var(--primary); color: white; }
+        h2 { color: #2c3e50; text-align: center; }
+        label { display: block; margin-top: 15px; font-weight: bold; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 5px; }
+        button { margin-top: 20px; padding: 12px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; width: 100%; }
+        button:hover { background: #2980b9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #f2f2f2; }
     </style>
 </head>
 <body>
 
 <div class="container">
-
-    <!-- Step 0: Home -->
-    <div id="step-0" class="step active" style="text-align: center; padding: 40px 0;">
-        <h2 style="font-size: 32px; margin-bottom: 15px;">Medical Appointment Booking</h2>
-        <p style="color: #64748b; font-size: 16px; margin-bottom: 35px;">Select your option below to proceed.</p>
-        <div style="max-width: 400px; margin: auto;">
-            <button class="btn-primary" onclick="nextStep(1)" style="padding: 18px; font-size: 16px; margin-bottom: 15px;">Book an Appointment</button>
-            <br>
-            <button class="btn-link" onclick="showLoginSection()" style="font-size: 16px;">Are you a Doctor? Log in</button>
-        </div>
+    <!-- Main Menu -->
+    <div id="step-home" class="step active">
+        <h2>Medical Appointment System</h2>
+        <button onclick="showStep('step-book')">Book an Appointment</button>
+        <button onclick="showStep('step-login')" style="background:#27ae60;">Doctor Login</button>
     </div>
 
-    <!-- Step 1: Patient Info -->
-    <div id="step-1" class="step">
-        <h3>Patient Information</h3>
-        <div class="form-grid">
-            <div><label>First Name:</label><input type="text" id="firstName" placeholder="First name"></div>
-            <div><label>Last Name:</label><input type="text" id="lastName" placeholder="Last name"></div>
-            <div><label>Phone:</label><input type="tel" id="phone" placeholder="05xxxxxxxx"></div>
-            <div><label>Email:</label><input type="email" id="email" placeholder="email@domain.com"></div>
-        </div>
-        <div class="btn-group">
-            <button class="btn-back" onclick="nextStep(0)">Back</button>
-            <button class="btn-primary" onclick="validateStep1()">Next</button>
-        </div>
-    </div>
-
-    <!-- Step 2: Location -->
-    <div id="step-2" class="step">
-        <h3>Select Location</h3>
-        <div class="form-grid">
-            <div class="full-width"><label>State (Wilaya):</label><select id="state" onchange="updateCircles()"><option value="">Select State</option></select></div>
-            <div class="full-width"><label>Circle (Daïra):</label><select id="circle" onchange="updateMunicipalities()"><option value="">Select Circle</option></select></div>
-            <div class="full-width"><label>Municipality (Baladiya):</label><select id="municipality"><option value="">Select Municipality</option></select></div>
-        </div>
-        <div class="btn-group">
-            <button class="btn-back" onclick="nextStep(1)">Back</button>
-            <button class="btn-primary" onclick="nextStep(3)">Next</button>
-        </div>
-    </div>
-
-    <!-- Step 3: Doctor Type -->
-    <div id="step-3" class="step">
-        <h3>Doctor Specialty</h3>
-        <label>Select Type:</label>
-        <select id="doctorType" onchange="toggleSpecialty()">
-            <option value="General">General Practitioner</option>
-            <option value="Specialist">Specialist</option>
-        </select>
-        <div id="specialtyContainer" style="display: none;">
-            <label>Specialty:</label>
-            <select id="specialty"><option value="">Select Specialty</option></select>
-        </div>
-        <div class="btn-group">
-            <button class="btn-back" onclick="nextStep(2)">Back</button>
-            <button class="btn-primary" onclick="fetchAvailableDoctors()">Search Doctors</button>
-        </div>
-    </div>
-
-    <!-- Step 4: Results & Booking -->
-    <div id="step-4" class="step">
-        <h3>Select Doctor & Date</h3>
-        <div id="doctorsListContainer" style="max-height: 250px; overflow-y: auto; border: 2px solid #e2e8f0; padding: 15px; border-radius: 14px; background: #fafafa; margin-bottom: 15px;">
-            <p style="color: #64748b; text-align: center;">No doctors loaded yet.</p>
-        </div>
-        <input type="hidden" id="selectedDoctorName">
-        <p id="chosenDoctorDisplay" style="font-weight: 600; color: var(--secondary); text-align: center; margin: 10px 0; font-size: 16px;"></p>
-        <label>Appointment Date & Time:</label>
-        <input type="datetime-local" id="appointmentDate">
-        <div class="btn-group">
-            <button class="btn-back" onclick="nextStep(3)">Back</button>
-            <button class="btn-success" onclick="submitBooking()">Confirm Booking</button>
-        </div>
+    <!-- Booking Form -->
+    <div id="step-book" class="step">
+        <h2>Book Appointment</h2>
+        <label>First Name</label><input type="text" id="pFirstName">
+        <label>Last Name</label><input type="text" id="pLastName">
+        <label>Specialty</label><select id="pSpecialty"></select>
+        <button onclick="searchDoctors()">Search Doctors</button>
+        <button onclick="showStep('step-home')" style="background:#95a5a6;">Back</button>
     </div>
 
     <!-- Doctor Login -->
-    <div id="doctor-login-section" class="step">
-        <h3>Doctor Login</h3>
-        <div style="max-width: 400px; margin: auto;">
-            <label>Email:</label><input type="email" id="loginEmail" placeholder="Email">
-            <label>Password:</label>
-            <div class="password-wrapper">
-                <input type="password" id="loginPassword" placeholder="Password">
-                <span class="toggle-password" onclick="togglePasswordVisibility('loginPassword', this)">👁️</span>
-            </div>
-            <div class="btn-group">
-                <button class="btn-back" onclick="nextStep(0)">Home</button>
-                <button class="btn-primary" onclick="doctorLogin()">Login</button>
-            </div>
-            <div style="text-align: center; margin-top: 20px;">
-                <button class="btn-link" onclick="showSignUpSection()">Don't have an account? Sign Up</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Doctor Sign Up -->
-    <div id="doctor-signup-section" class="step">
-        <h3>Doctor Registration</h3>
-        <div class="form-grid">
-            <div><label>First Name:</label><input type="text" id="docFirstName" placeholder="First Name"></div>
-            <div><label>Last Name:</label><input type="text" id="docLastName" placeholder="Last Name"></div>
-            <div><label>Phone:</label><input type="tel" id="docPhone" placeholder="Phone"></div>
-            <div><label>Email:</label><input type="email" id="docEmail" placeholder="Email"></div>
-            <div>
-                <label>Password:</label>
-                <div class="password-wrapper">
-                    <input type="password" id="docPassword" placeholder="Password">
-                    <span class="toggle-password" onclick="togglePasswordVisibility('docPassword', this)">👁️</span>
-                </div>
-            </div>
-            <div>
-                <label>Confirm Password:</label>
-                <div class="password-wrapper">
-                    <input type="password" id="docConfirmPassword" placeholder="Confirm Password">
-                    <span class="toggle-password" onclick="togglePasswordVisibility('docConfirmPassword', this)">👁️</span>
-                </div>
-            </div>
-            <div class="full-width"><label>State (Wilaya):</label><select id="docState" onchange="updateDocCircles()"><option value="">Select State</option></select></div>
-            <div class="full-width"><label>Circle (Daïra):</label><select id="docCircle" onchange="updateDocMunicipalities()"><option value="">Select Circle</option></select></div>
-            <div class="full-width"><label>Municipality (Baladiya):</label><select id="docMunicipality"><option value="">Select Municipality</option></select></div>
-            <div class="full-width"><label>Clinic Address:</label><input type="text" id="docAddress" placeholder="Street / Landmark"></div>
-            <div>
-                <label>Type:</label>
-                <select id="docType" onchange="toggleDocSpecialty()">
-                    <option value="General">General</option>
-                    <option value="Specialist">Specialist</option>
-                </select>
-            </div>
-            <div id="docSpecialtyContainer" style="display: none;" class="full-width">
-                <label>Specialty:</label>
-                <select id="docSpecialty"><option value="">Select Specialty</option></select>
-            </div>
-        </div>
-        <div class="btn-group">
-            <button class="btn-back" onclick="showLoginSection()">Back</button>
-            <button class="btn-success" onclick="doctorSignUp()">Register</button>
-        </div>
+    <div id="step-login" class="step">
+        <h2>Doctor Login</h2>
+        <label>Email</label><input type="email" id="dEmail">
+        <label>Password</label><input type="password" id="dPass">
+        <button onclick="loginDoctor()">Login</button>
+        <button onclick="showStep('step-home')" style="background:#95a5a6;">Back</button>
     </div>
 
     <!-- Doctor Dashboard -->
-    <div id="doctor-dashboard" class="step">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #f8fafc; padding: 15px; border-radius: 12px;">
-            <span id="welcomeDocName" style="font-weight: 600; color: var(--primary); font-size: 18px;"></span>
-            <button class="btn-back" onclick="logoutDoctor()" style="padding: 8px 14px; font-size: 13px; width: auto;">Logout</button>
+    <div id="step-dashboard" class="step">
+        <h2>Doctor Dashboard</h2>
+        <div id="dashboard-content">
+            <h3>Upcoming Appointments</h3>
+            <table id="apptTable">
+                <thead><tr><th>Patient</th><th>Date</th><th>Queue</th></tr></thead>
+                <tbody></tbody>
+            </table>
+            <h3>Settings</h3>
+            <label>Daily Limit</label>
+            <input type="number" id="dailyLimit">
+            <button onclick="updateSettings()">Save Settings</button>
         </div>
-        
-        <!-- أزرار التنقل بين لوحة التحكم والإعدادات -->
-        <div class="dashboard-nav">
-            <button id="nav-control" class="active-tab" onclick="switchDashboardTab('control')">لوحة التحكم</button>
-            <button id="nav-settings" onclick="switchDashboardTab('settings')">الإعدادات</button>
-        </div>
-
-        <!-- محتوى لوحة التحكم (الطلبات المحجوزة بالايام) -->
-        <div id="tab-control-content" class="dashboard-tab-content">
-            <h4 style="color: #475569;">الطلبات المحجوزة بالايام:</h4>
-            <div style="overflow-x: auto; max-height: 350px;">
-                <table>
-                    <thead>
-                        <tr><th>الاسم</th><th>اللقب</th><th>الهاتف</th><th>البريد</th><th>تاريخ الموعد المخصص</th><th>رقم الحجز (الدور)</th></tr>
-                    </thead>
-                    <tbody id="appointmentsList"><tr><td colspan="6">جاري التحميل...</td></tr></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- محتوى الإعدادات (تغيير عدد الطلبات في اليوم) -->
-        <div id="tab-settings-content" class="dashboard-tab-content" style="display: none;">
-            <h4 style="color: #475569;">إعدادات الطبيب</h4>
-            <div style="max-width: 400px; margin: auto; background: #fafafa; padding: 20px; border-radius: 14px; border: 1px solid #e2e8f0;">
-                <label>الحد الأقصى لعدد الطلبات في اليوم الواحد:</label>
-                <input type="number" id="settingDailyLimit" min="1" value="40">
-                <button class="btn-success" style="margin-top: 15px;" onclick="saveDoctorSettings()">حفظ التغييرات</button>
-            </div>
-        </div>
+        <button onclick="location.reload()" style="background:#e74c3c;">Logout</button>
     </div>
-
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbwsti8HCHgVB78v0ym0f6kWBkatun3mqBNkpAQSpvfsvCurQkUP8n9mOQxzQft16kU7/exec';
-    let settingsData = [];
-    let currentDoctorEmail = '';
-
-    fetch(`${scriptURL}?action=get_settings`)
-        .then(res => res.json())
-        .then(data => {
-            settingsData = data;
-            let states = [...new Set(data.map(item => item[0]))];
-            populateSelect('state', states);
-            populateSelect('docState', states);
-        });
-
-    function populateSelect(id, items) {
-        let sel = document.getElementById(id);
-        sel.innerHTML = '<option value="">Select</option>' + items.map(i => `<option value="${i}">${i}</option>`).join('');
+    function showStep(stepId) {
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        document.getElementById(stepId).classList.add('active');
     }
 
-    function updateCircles() {
-        let state = document.getElementById('state').value;
-        let circles = [...new Set(settingsData.filter(i => i[0] === state).map(i => i[1]))];
-        populateSelect('circle', circles);
-        populateSelect('municipality', []);
-    }
+    // هنا يتم ربط الدوال مع Google Apps Script (عبر google.script.run)
+    function searchDoctors() { alert("Searching..."); }
+    function loginDoctor() { showStep('step-dashboard'); }
+    function updateSettings() { alert("Settings Updated!"); }
 
-    function updateMunicipalities() {
-        let state = document.getElementById('state').value;
-        let circle = document.getElementById('circle').value;
-        let munis = [...new Set(settingsData.filter(i => i[0] === state && i[1] === circle).map(i => i[2]))];
-        populateSelect('municipality', munis);
-    }
-
-    function updateDocCircles() {
-        let state = document.getElementById('docState').value;
-        let circles = [...new Set(settingsData.filter(i => i[0] === state).map(i => i[1]))];
-        populateSelect('docCircle', circles);
-        populateSelect('docMunicipality', []);
-        let specs = [...new Set(settingsData.filter(i => i[0] === state).map(i => i[3]).filter(Boolean))];
-        populateSelect('docSpecialty', specs);
-    }
-
-    function updateDocMunicipalities() {
-        let state = document.getElementById('docState').value;
-        let circle = document.getElementById('docCircle').value;
-        let munis = [...new Set(settingsData.filter(i => i[0] === state && i[1] === circle).map(i => i[2]))];
-        populateSelect('docMunicipality', munis);
-    }
-
-    function togglePasswordVisibility(fieldId, iconElement) {
-        const inputField = document.getElementById(fieldId);
-        if (inputField.type === 'password') {
-            inputField.type = 'text';
-            iconElement.textContent = '🙈';
-        } else {
-            inputField.type = 'password';
-            iconElement.textContent = '👁️';
-        }
-    }
-
-    function nextStep(step) {
-        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
-        document.getElementById(`step-${step}`).classList.add('active');
-    }
-
-    function showLoginSection() {
-        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
-        document.getElementById('doctor-login-section').classList.add('active');
-    }
-
-    function showSignUpSection() {
-        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
-        document.getElementById('doctor-signup-section').classList.add('active');
-    }
-
-    function validateStep1() {
-        if(!document.getElementById('firstName').value || !document.getElementById('phone').value) {
-            alert('Please fill in your name and phone number.');
-            return;
-        }
-        nextStep(2);
-    }
-
-    function toggleSpecialty() {
-        let isSpecialist = document.getElementById('doctorType').value === 'Specialist';
-        document.getElementById('specialtyContainer').style.display = isSpecialist ? 'block' : 'none';
-        if(isSpecialist) {
-            let specs = [...new Set(settingsData.map(i => i[3]).filter(Boolean))];
-            populateSelect('specialty', specs);
-        }
-    }
-
-    function toggleDocSpecialty() {
-        document.getElementById('docSpecialtyContainer').style.display = (document.getElementById('docType').value === 'Specialist') ? 'block' : 'none';
-    }
-
-    function doctorSignUp() {
-        const pass = document.getElementById('docPassword').value;
-        const confirmPass = document.getElementById('docConfirmPassword').value;
-        if (pass !== confirmPass) { alert('Passwords do not match!'); return; }
-
-        const docData = {
-            action: 'signup',
-            firstName: document.getElementById('docFirstName').value,
-            lastName: document.getElementById('docLastName').value,
-            phone: document.getElementById('docPhone').value,
-            email: document.getElementById('docEmail').value,
-            password: pass,
-            state: document.getElementById('docState').value,
-            circle: document.getElementById('docCircle').value,
-            municipality: document.getElementById('docMunicipality').value,
-            address: document.getElementById('docAddress').value,
-            type: document.getElementById('docType').value,
-            specialty: document.getElementById('docSpecialty').value || ''
-        };
-
-        if(!docData.email || !docData.password || !docData.firstName || !docData.circle) {
-            alert('Please fill in required fields.');
-            return;
-        }
-
-        alert('Creating account...');
-        fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(docData) })
-        .then(() => { alert('Account created successfully!'); showLoginSection(); })
-        .catch(err => alert('Error: ' + err));
-    }
-
-    function doctorLogin() {
-        const email = document.getElementById('loginEmail').value;
-        const pass = document.getElementById('loginPassword').value;
-        if(!email || !pass) { alert('Enter email and password.'); return; }
-
-        alert('Verifying...');
-        fetch(scriptURL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'login', email, password: pass }) })
-        .then(res => res.json())
-        .then(data => {
-            if(data.result === 'success') {
-                currentDoctorEmail = data.doctor.email;
-                document.getElementById('welcomeDocName').innerText = `مرحباً بك دكتور، ${data.doctor.fullName}`;
-                document.getElementById('settingDailyLimit').value = data.doctor.dailyLimit;
-                document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
-                document.getElementById('doctor-dashboard').classList.add('active');
-                fetchDoctorDashboardData(data.doctor.email);
-            } else { alert(data.message); }
-        }).catch(() => alert('Login error.'));
-    }
-
-    function switchDashboardTab(tab) {
-        if(tab === 'control') {
-            document.getElementById('nav-control').classList.add('active-tab');
-            document.getElementById('nav-settings').classList.remove('active-tab');
-            document.getElementById('tab-control-content').style.display = 'block';
-            document.getElementById('tab-settings-content').style.display = 'none';
-        } else {
-            document.getElementById('nav-settings').classList.add('active-tab');
-            document.getElementById('nav-control').classList.remove('active-tab');
-            document.getElementById('tab-settings-content').style.display = 'block';
-            document.getElementById('tab-control-content').style.display = 'none';
-        }
-    }
-
-    function saveDoctorSettings() {
-        const newLimit = document.getElementById('settingDailyLimit').value;
-        fetch(scriptURL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'update_settings', email: currentDoctorEmail, dailyLimit: newLimit }) })
-        .then(res => res.json())
-        .then(data => {
-            if(data.result === 'success') {
-                alert('تم حفظ إعدادات الحد اليومي بنجاح!');
-            } else {
-                alert('حدث خطأ أثناء الحفظ.');
-            }
-        });
-    }
-
-    function fetchAvailableDoctors() {
-        const state = document.getElementById('state').value;
-        const municipality = document.getElementById('municipality').value;
-        const type = document.getElementById('doctorType').value;
-        const specialty = document.getElementById('specialty').value || '';
-
-        if(!state || !municipality) { alert('Fill location fields.'); return; }
-
-        alert('Searching...');
-        fetch(`${scriptURL}?action=get_doctors&state=${encodeURIComponent(state)}&municipality=${encodeURIComponent(municipality)}&type=${encodeURIComponent(type)}&specialty=${encodeURIComponent(specialty)}`)
-        .then(res => res.json())
-        .then(data => {
-            const container = document.getElementById('doctorsListContainer');
-            container.innerHTML = '';
-            if(data.length === 0) {
-                container.innerHTML = '<p style="color: red; text-align: center;">No doctors found.</p>';
-                nextStep(4);
-                return;
-            }
-            data.forEach(doc => {
-                container.innerHTML += `
-                    <div class="doc-card">
-                        <div>
-                            <strong>${doc.fullName}</strong> (${doc.type} ${doc.specialty ? '- ' + doc.specialty : ''})<br>
-                            <small style="color: #64748b;">📍 ${doc.address || 'No address'}</small>
-                        </div>
-                        <button class="btn-success" style="width: auto; padding: 8px 16px;" onclick="selectDoctor('${doc.fullName}')">Select</button>
-                    </div>`;
-            });
-            nextStep(4);
-        });
-    }
-
-    function selectDoctor(docName) {
-        document.getElementById('selectedDoctorName').value = docName;
-        document.getElementById('chosenDoctorDisplay').innerText = `Selected: ${docName}`;
-        alert(`Selected ${docName}. Now choose date.`);
-    }
-
-    function submitBooking() {
-        const bookingData = {
-            action: 'book',
-            firstName: document.getElementById('firstName').value,
-            lastName: document.getElementById('lastName').value,
-            phone: document.getElementById('phone').value,
-            email: document.getElementById('email').value,
-            state: document.getElementById('state').value,
-            doctor: document.getElementById('selectedDoctorName').value,
-            appointmentDate: document.getElementById('appointmentDate').value
-        };
-
-        if(!bookingData.email || !bookingData.appointmentDate || !bookingData.doctor) {
-            alert('Complete email, doctor selection, and date.');
-            return;
-        }
-
-        alert('Confirming booking and sending email...');
-        fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(bookingData) })
-        .then(() => { alert('Booked successfully! Check your email for details.'); location.reload(); });
-    }
-
-    function fetchDoctorDashboardData(email) {
-        fetch(`${scriptURL}?doctorEmail=${encodeURIComponent(email)}`)
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('welcomeDocName').innerText = `مرحباً بك دكتور، ${data.doctorName}`;
-            document.getElementById('settingDailyLimit').value = data.dailyLimit;
-            const tbody = document.getElementById('appointmentsList');
-            tbody.innerHTML = '';
-            if(data.appointments.length === 0) { tbody.innerHTML = '<tr><td colspan="6">لا توجد حجوزات حتى الآن.</td></tr>'; return; }
-            data.appointments.forEach(app => {
-                tbody.innerHTML += `<tr><td>${app.firstName}</td><td>${app.lastName}</td><td>${app.phone}</td><td>${app.email}</td><td>${app.assignedDate}</td><td><strong>رقم ${app.queueNumber}</strong></td></tr>`;
-            });
-        });
-    }
-
-    function logoutDoctor() {
-        nextStep(0);
-    }
+    // تحميل التخصصات عند فتح الصفحة
+    window.onload = function() {
+        // يمكنك استدعاء دالة من Apps Script لجلب التخصصات وتعبئة القائمة
+        // google.script.run.withSuccessHandler(fillSpecialties).getSpecialties();
+    };
 </script>
+
 </body>
 </html>
