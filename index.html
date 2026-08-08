@@ -282,6 +282,12 @@ th{background:var(--primary);color:#fff;position:sticky;top:0}
         <span id="activeLabel" class="service-status status-on">Active</span>
       </div>
 
+      <div style="margin-top:22px">
+        <label style="margin-bottom:8px">Working Days</label>
+        <p style="font-size:12px;color:#64748b;margin:2px 0 10px">Turn off any day you don't work. Patients will never be scheduled on an off day — they'll automatically get the next open working day instead.</p>
+        <div id="workingDaysContainer" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+
       <button class="btn-success" style="margin-top:18px" onclick="saveDoctorSettings()">💾 Save Changes</button>
       <div id="settingsSaved" class="msg msg-success" style="margin-top:10px">✅ Settings saved successfully!</div>
     </div>
@@ -303,13 +309,14 @@ th{background:var(--primary);color:#fff;position:sticky;top:0}
 </div>
 
 <script>
-const scriptURL = 'https://script.google.com/macros/s/AKfycbx5G8fuiBjEG_EUb3s2DFndqJHXMuIGm12FZQ9EVlr6jT1ybsjhxbB7jM63_Mz2Prb-/exec';
+const scriptURL = 'https://script.google.com/macros/s/AKfycbyQ-GFD8nTZBno8DTpPD-fKc5c3U-qfpoEyvX4fRURmzybSg8imqDV0g1ssRKXGeSj3/exec';
 let regionsData = [], specialtiesData = [];
 let currentDoctorEmail = '';
 let allAppointments = []; // كل مواعيد الطبيب
 let selectedDoctorName = '';
 let selectedDoctorActive = true;
 let currentFilter = 'ALL';
+const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']; // index matches JS Date.getDay()
 
 // ── Boot ──────────────────────────────────────────────────
 // جلب JSON مع retry تلقائي (يعالج مشكلة Apps Script يرجع HTML أول مرة)
@@ -621,6 +628,7 @@ function doctorLogin() {
       document.getElementById('settingDailyLimit').value=data.doctor.dailyLimit;
       const active=data.doctor.isActive;
       document.getElementById('toggleActive').checked=active;
+      renderWorkingDaysToggles(data.doctor.workingDays);
       updateServiceStatus();
       document.querySelectorAll('.step').forEach(e=>e.classList.remove('active'));
       document.getElementById('doctor-dashboard').classList.add('active');
@@ -641,11 +649,32 @@ function switchTab(tab) {
   hideMsg('settingsSaved');
 }
 
+function renderWorkingDaysToggles(activeDays) {
+  const set = new Set((activeDays && activeDays.length) ? activeDays : [0,1,2,3,4,5,6]);
+  const box = document.getElementById('workingDaysContainer');
+  box.innerHTML = DAY_NAMES.map((name, idx) => `
+    <div class="toggle-wrap" style="margin:0;justify-content:space-between">
+      <label style="margin:0">${name}</label>
+      <label class="toggle">
+        <input type="checkbox" class="wd-toggle" data-day="${idx}" ${set.has(idx)?'checked':''}>
+        <span class="slider"></span>
+      </label>
+    </div>`).join('');
+}
+
+function getSelectedWorkingDays() {
+  return Array.from(document.querySelectorAll('.wd-toggle'))
+    .filter(cb=>cb.checked)
+    .map(cb=>parseInt(cb.dataset.day,10));
+}
+
 function saveDoctorSettings() {
   const limit=document.getElementById('settingDailyLimit').value;
   const active=document.getElementById('toggleActive').checked;
+  const workingDays=getSelectedWorkingDays();
+  if(workingDays.length===0){ alert('Please keep at least one working day active.'); return; }
   fetch(scriptURL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify({action:'update_settings',email:currentDoctorEmail,dailyLimit:limit,isActive:active})})
+    body:JSON.stringify({action:'update_settings',email:currentDoctorEmail,dailyLimit:limit,isActive:active,workingDays})})
   .then(r=>r.json())
   .then(data=>{
     if(data.result==='success') showMsg('settingsSaved','✅ Settings saved!','success');
@@ -672,6 +701,7 @@ function fetchDoctorDashboardData(email) {
     document.getElementById('settingDailyLimit').value=data.dailyLimit;
     const active=data.isActive;
     document.getElementById('toggleActive').checked=active;
+    renderWorkingDaysToggles(data.workingDays);
     updateServiceStatus();
     allAppointments=data.appointments||[];
     renderAppointments(currentFilter);
