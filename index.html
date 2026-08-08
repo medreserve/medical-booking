@@ -253,9 +253,9 @@ th{background:var(--primary);color:#fff;position:sticky;top:0}
   <div id="tab-control-content">
     <div id="dayFilterBar" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
       <button onclick="filterDay('ALL')" id="f-ALL" class="btn-primary" style="width:auto;padding:7px 16px;font-size:13px">All</button>
-      <button onclick="filterDay('YESTERDAY')" id="f-YESTERDAY" style="width:auto;padding:7px 16px;font-size:13px;background:#e2e8f0;color:#334155;border:none;border-radius:10px;cursor:pointer">Yesterday</button>
+      <button onclick="filterDay('YESTERDAY')" id="f-YESTERDAY" style="width:auto;padding:7px 16px;font-size:13px;background:#e2e8f0;color:#334155;border:none;border-radius:10px;cursor:pointer">Previous Day</button>
       <button onclick="filterDay('TODAY')" id="f-TODAY" style="width:auto;padding:7px 16px;font-size:13px;background:#e2e8f0;color:#334155;border:none;border-radius:10px;cursor:pointer">Today</button>
-      <button onclick="filterDay('TOMORROW')" id="f-TOMORROW" style="width:auto;padding:7px 16px;font-size:13px;background:#e2e8f0;color:#334155;border:none;border-radius:10px;cursor:pointer">Tomorrow</button>
+      <button onclick="filterDay('TOMORROW')" id="f-TOMORROW" style="width:auto;padding:7px 16px;font-size:13px;background:#e2e8f0;color:#334155;border:none;border-radius:10px;cursor:pointer">Next Day</button>
     </div>
     <div style="overflow-x:auto;max-height:380px;overflow-y:auto">
       <table>
@@ -288,6 +288,15 @@ th{background:var(--primary);color:#fff;position:sticky;top:0}
         <div id="workingDaysContainer" style="display:flex;flex-direction:column;gap:6px"></div>
       </div>
 
+      <div style="margin-top:22px">
+        <label style="margin-bottom:8px">Working Hours</label>
+        <p style="font-size:12px;color:#64748b;margin:2px 0 10px">If a patient books after your closing time, they'll be scheduled for the next working day — even if today isn't full yet.</p>
+        <div class="form-grid" style="gap:12px">
+          <div><label style="font-size:13px">Start</label><input type="time" id="settingWorkStart" value="08:00"></div>
+          <div><label style="font-size:13px">End</label><input type="time" id="settingWorkEnd" value="17:00"></div>
+        </div>
+      </div>
+
       <button class="btn-success" style="margin-top:18px" onclick="saveDoctorSettings()">💾 Save Changes</button>
       <div id="settingsSaved" class="msg msg-success" style="margin-top:10px">✅ Settings saved successfully!</div>
     </div>
@@ -309,7 +318,7 @@ th{background:var(--primary);color:#fff;position:sticky;top:0}
 </div>
 
 <script>
-const scriptURL = 'https://script.google.com/macros/s/AKfycbyQ-GFD8nTZBno8DTpPD-fKc5c3U-qfpoEyvX4fRURmzybSg8imqDV0g1ssRKXGeSj3/exec';
+const scriptURL = 'https://script.google.com/macros/s/AKfycbwW5-kk4fHlkzUmvqQaZN-KiTOCNsuYqPg_uT-qC2MSCitOBYSjqVg1wOWZT0S3MXab/exec';
 let regionsData = [], specialtiesData = [];
 let currentDoctorEmail = '';
 let allAppointments = []; // كل مواعيد الطبيب
@@ -629,6 +638,8 @@ function doctorLogin() {
       const active=data.doctor.isActive;
       document.getElementById('toggleActive').checked=active;
       renderWorkingDaysToggles(data.doctor.workingDays);
+      document.getElementById('settingWorkStart').value=data.doctor.workStart||'08:00';
+      document.getElementById('settingWorkEnd').value=data.doctor.workEnd||'17:00';
       updateServiceStatus();
       document.querySelectorAll('.step').forEach(e=>e.classList.remove('active'));
       document.getElementById('doctor-dashboard').classList.add('active');
@@ -672,9 +683,12 @@ function saveDoctorSettings() {
   const limit=document.getElementById('settingDailyLimit').value;
   const active=document.getElementById('toggleActive').checked;
   const workingDays=getSelectedWorkingDays();
+  const workStart=document.getElementById('settingWorkStart').value||'08:00';
+  const workEnd=document.getElementById('settingWorkEnd').value||'17:00';
   if(workingDays.length===0){ alert('Please keep at least one working day active.'); return; }
+  if(workStart>=workEnd){ alert('Start time must be before end time.'); return; }
   fetch(scriptURL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify({action:'update_settings',email:currentDoctorEmail,dailyLimit:limit,isActive:active,workingDays})})
+    body:JSON.stringify({action:'update_settings',email:currentDoctorEmail,dailyLimit:limit,isActive:active,workingDays,workStart,workEnd})})
   .then(r=>r.json())
   .then(data=>{
     if(data.result==='success') showMsg('settingsSaved','✅ Settings saved!','success');
@@ -702,6 +716,8 @@ function fetchDoctorDashboardData(email) {
     const active=data.isActive;
     document.getElementById('toggleActive').checked=active;
     renderWorkingDaysToggles(data.workingDays);
+    document.getElementById('settingWorkStart').value=data.workStart||'08:00';
+    document.getElementById('settingWorkEnd').value=data.workEnd||'17:00';
     updateServiceStatus();
     allAppointments=data.appointments||[];
     renderAppointments(currentFilter);
@@ -717,6 +733,13 @@ function filterDay(key) {
     b.style.color=k===key?'#fff':'#334155';
   });
   renderAppointments(key);
+}
+
+function dayLabelDisplay(key) {
+  if (key === 'YESTERDAY') return 'PREVIOUS DAY';
+  if (key === 'TOMORROW')  return 'NEXT DAY';
+  if (key === 'TODAY')     return 'TODAY';
+  return key;
 }
 
 function renderAppointments(filter) {
@@ -736,7 +759,7 @@ function renderAppointments(filter) {
 
   let html='', rowNum=0;
   orderedKeys.forEach(key=>{
-    const label=key==='TODAY'?'📅 TODAY':key==='YESTERDAY'?'📅 YESTERDAY':key==='TOMORROW'?'📅 TOMORROW':'📅 '+groups[key][0].assignedDay;
+    const label=dayOrder.includes(key)?('📅 '+dayLabelDisplay(key)):'📅 '+groups[key][0].assignedDay;
     html+=`<tr class="day-group-header"><td colspan="8">${label} — ${groups[key].length} patient(s)</td></tr>`;
     groups[key].forEach(a=>{
       rowNum++;
@@ -745,7 +768,7 @@ function renderAppointments(filter) {
         <td>${rowNum}</td>
         <td>${a.firstName}</td><td>${a.lastName}</td>
         <td>${a.phone}</td><td style="font-size:12px">${a.email}</td>
-        <td><span class="day-badge ${badgeCls}">${key}</span></td>
+        <td><span class="day-badge ${badgeCls}">${dayLabelDisplay(key)}</span></td>
         <td>${a.assignedDay}</td>
         <td><strong>#${a.queueNumber}</strong></td>
       </tr>`;
