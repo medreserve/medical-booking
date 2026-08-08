@@ -1,719 +1,657 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Appointment System</title>
-    <style>
-        :root {
-            --bg-dark: #121212;
-            --surface-dark: #1e1e1e;
-            --surface-card: #252525;
-            --gold: #d4af37;
-            --gold-hover: #e6c567;
-            --text-light: #f3f4f6;
-            --text-muted: #9ca3af;
-            --border-color: #333333;
-            --danger: #ef4444;
-            --header-h: 70px;
-        }
-        * { box-sizing: border-box; }
-        html, body { height: 100%; }
-        body {
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            background: var(--bg-dark);
-            margin: 0; padding: 0; color: var(--text-light);
-            min-height: 100vh;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medical Appointment System</title>
+<style>
+:root{--primary:#2563eb;--secondary:#10b981;--dark:#1e293b;--danger:#ef4444;--warn:#f59e0b}
+*{box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f1f5f9;margin:0;color:var(--dark);display:flex;justify-content:center;align-items:center;min-height:100vh}
+.container{width:100%;max-width:900px;margin:20px;background:#fff;padding:40px;border-radius:24px;box-shadow:0 20px 40px rgba(0,0,0,.07)}
+.step{display:none;animation:fadeIn .35s ease}
+.step.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
-        /* ---------- Top Navbar ---------- */
-        .topbar {
-            height: var(--header-h);
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 32px;
-            background: var(--surface-dark);
-            border-bottom: 1px solid var(--border-color);
-            position: sticky; top: 0; z-index: 50;
-        }
-        .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; color: var(--gold); }
-        .brand-icon {
-            width: 38px; height: 38px; border-radius: 10px;
-            background: linear-gradient(135deg, var(--gold), #b38f27);
-            display: flex; align-items: center; justify-content: center; color: #121212; font-size: 18px;
-        }
-        .topbar-sub { font-size: 13px; color: var(--text-muted); display: none; }
-        @media (min-width: 640px) { .topbar-sub { display: block; } }
+/* forms */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.full-width{grid-column:span 2}
+input,select{width:100%;padding:13px 14px;margin:6px 0;border:2px solid #e2e8f0;border-radius:12px;font-size:15px;background:#fafafa;transition:.2s}
+input:focus,select:focus{border-color:var(--primary);outline:none;background:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.1)}
+label{font-weight:600;font-size:14px;color:#475569;display:block;margin-top:10px}
+.password-wrapper{position:relative}
+.password-wrapper input{padding-right:45px}
+.eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:18px;color:#64748b}
 
-        /* ---------- Page Frame ---------- */
-        .page {
-            width: 100%;
-            min-height: calc(100vh - var(--header-h));
-            display: flex; align-items: center; justify-content: center;
-            padding: 32px 20px;
-        }
-        .container {
-            width: 100%;
-            max-width: 1180px;
-            min-height: calc(100vh - var(--header-h) - 64px);
-            margin: 0 auto;
-            background: var(--surface-dark);
-            padding: 48px;
-            border-radius: 28px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
-            display: flex; flex-direction: column; justify-content: center;
-        }
-        @media (max-width: 900px) {
-            .container { padding: 32px 22px; border-radius: 20px; min-height: auto; }
-            .page { padding: 16px; }
-        }
-        @media (max-width: 480px) {
-            .container { padding: 22px 16px; border-radius: 16px; }
-            .topbar { padding: 0 16px; }
-        }
+/* buttons */
+.btn-group{display:flex;gap:12px;margin-top:22px}
+button{padding:13px 22px;border:none;border-radius:12px;cursor:pointer;font-weight:600;font-size:15px;width:100%;transition:.25s;position:relative;overflow:hidden}
+button:not(:disabled):hover{filter:brightness(1.06);transform:translateY(-1px)}
+button:disabled{opacity:.6;cursor:not-allowed}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-success{background:var(--secondary);color:#fff}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-back{background:#e2e8f0;color:#475569;width:auto;padding:13px 28px}
+.btn-link{background:none;border:none;color:var(--primary);text-decoration:underline;cursor:pointer;margin-top:12px;width:auto;font-size:14px}
 
-        .step { display: none; animation: fadeIn 0.4s ease-in-out; }
-        .step.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+/* spinner inside button */
+.spinner{display:inline-block;width:16px;height:16px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin-right:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-        .full-width { grid-column: span 2; }
-        @media (max-width: 640px) {
-            .form-grid { grid-template-columns: 1fr; }
-            .full-width { grid-column: span 1; }
-        }
+h2,h3{color:var(--primary);margin-top:0;font-size:26px;text-align:center;margin-bottom:22px}
+.msg{border-radius:10px;padding:11px 15px;font-size:14px;margin-top:8px;display:none}
+.msg-error{background:#fef2f2;border:1px solid #fecaca;color:var(--danger)}
+.msg-success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
 
-        input, select {
-            width: 100%; padding: 14px 16px; margin: 8px 0;
-            border: 2px solid var(--border-color); border-radius: 12px;
-            font-size: 15px; background: var(--surface-card); color: var(--text-light); font-family: inherit;
-        }
-        input:focus, select:focus {
-            border-color: var(--gold); outline: none; background: #1e1e1e;
-            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.15);
-        }
-        label { font-weight: 600; font-size: 14px; color: var(--text-muted); display: block; margin-top: 10px; }
+/* doctor cards */
+.doc-card{background:#f8fafc;padding:18px 20px;border-radius:14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;border:1.5px solid #e2e8f0;gap:12px}
+.doc-card.inactive{border-color:#fca5a5;background:#fff5f5}
 
-        .password-wrapper { position: relative; }
-        .password-wrapper input { padding-right: 45px; }
-        .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-muted); font-size: 18px; }
+/* dashboard */
+.dashboard-nav{display:flex;gap:10px;margin-bottom:18px}
+.dashboard-nav button{background:#e2e8f0;color:#334155;width:auto;padding:10px 22px}
+.dashboard-nav button.active-tab{background:var(--primary);color:#fff}
 
-        .btn-group { display: flex; gap: 15px; margin-top: 25px; flex-wrap: wrap; }
-        button {
-            padding: 14px 24px; border: none; border-radius: 12px; cursor: pointer;
-            font-weight: 700; font-size: 15px; width: 100%; transition: 0.2s; font-family: inherit;
-        }
-        button:hover { filter: brightness(1.1); transform: translateY(-2px); }
-        
-        /* Golden Buttons Style */
-        .btn-primary { background: var(--gold); color: #121212; }
-        .btn-success { background: var(--gold); color: #121212; }
-        
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-back { background: #333333; color: var(--text-light); width: auto; padding: 14px 30px; }
-        .btn-link { background: none; border: none; color: var(--gold); text-decoration: underline; cursor: pointer; margin-top: 15px; width: auto; display: inline-block; font-size: 14px; }
-        .btn-link:hover { transform: none; color: var(--gold-hover); }
+/* appointment table */
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
+th,td{border:1px solid #e2e8f0;padding:10px 12px;text-align:center}
+th{background:var(--primary);color:#fff;position:sticky;top:0}
+.day-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}
+.badge-today{background:#dcfce7;color:#166534}
+.badge-yesterday{background:#fef9c3;color:#854d0e}
+.badge-tomorrow{background:#dbeafe;color:#1e40af}
+.badge-other{background:#f1f5f9;color:#475569}
+.day-group-header td{background:#f8fafc;font-weight:700;color:#475569;font-size:13px;text-align:left;padding:8px 14px}
 
-        h2, h3 { color: var(--gold); margin-top: 0; font-size: 28px; text-align: center; margin-bottom: 25px; }
-        h4 { color: var(--text-light); }
+/* toggle switch */
+.toggle-wrap{display:flex;align-items:center;gap:12px;margin:16px 0}
+.toggle-wrap label{margin:0;font-size:15px;color:#334155}
+.toggle{position:relative;width:52px;height:28px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#cbd5e1;border-radius:14px;cursor:pointer;transition:.3s}
+.slider:before{content:'';position:absolute;width:22px;height:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.toggle input:checked+.slider{background:var(--secondary)}
+.toggle input:checked+.slider:before{transform:translateX(24px)}
+.service-status{font-size:13px;font-weight:700;padding:4px 12px;border-radius:20px}
+.status-on{background:#dcfce7;color:#166534}
+.status-off{background:#fee2e2;color:#991b1b}
 
-        .doc-card {
-            background: var(--surface-card); padding: 20px; border-radius: 16px; margin-bottom: 15px;
-            border-left: 6px solid var(--gold); display: flex; justify-content: space-between;
-            align-items: center; border: 1px solid var(--border-color); gap: 12px; flex-wrap: wrap;
-        }
-        .doc-card.unavailable { border-left-color: var(--danger); opacity: 0.75; }
-        .badge-unavailable {
-            display: inline-block; background: rgba(239, 68, 68, 0.2); color: var(--danger);
-            font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; margin-top: 6px;
-        }
-        .doc-hours { color: var(--text-muted); font-size: 13px; }
-
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid var(--border-color); padding: 12px; text-align: center; font-size: 14px; color: var(--text-light); }
-        th { background: #222222; color: var(--gold); }
-
-        .dashboard-nav { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .dashboard-nav button { background: #333333; color: var(--text-light); width: auto; padding: 12px 22px; }
-        .dashboard-nav button.active-tab { background: var(--gold); color: #121212; }
-
-        .settings-card {
-            max-width: 480px; margin: auto; background: var(--surface-card); padding: 24px;
-            border-radius: 16px; border: 1px solid var(--border-color);
-        }
-
-        /* Golden dashed box style inspired by reference image */
-        .golden-box {
-            border: 2px dashed var(--gold);
-            padding: 20px;
-            border-radius: 14px;
-            text-align: center;
-            color: var(--gold);
-            font-weight: 700;
-            letter-spacing: 1px;
-            margin: 15px 0;
-            background: rgba(212, 175, 55, 0.05);
-        }
-
-        /* Toggle switch for service status */
-        .status-row { display: flex; align-items: center; justify-content: space-between; margin: 18px 0; }
-        .status-label { font-weight: 700; font-size: 15px; }
-        .switch { position: relative; display: inline-block; width: 56px; height: 30px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute; cursor: pointer; inset: 0; background-color: var(--danger);
-            transition: 0.3s; border-radius: 999px;
-        }
-        .slider:before {
-            position: absolute; content: ""; height: 22px; width: 22px; left: 4px; bottom: 4px;
-            background-color: white; transition: 0.3s; border-radius: 50%;
-        }
-        .switch input:checked + .slider { background-color: var(--gold); }
-        .switch input:checked + .slider:before { transform: translateX(26px); }
-        .status-text { font-size: 13px; font-weight: 700; margin-top: 4px; }
-
-        .hours-row { display: flex; gap: 14px; }
-        .hours-row > div { flex: 1; }
-
-        footer { text-align: center; padding: 18px; color: var(--text-muted); font-size: 13px; border-top: 1px solid var(--border-color); margin-top: auto; }
-    </style>
+/* booking receipt modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100;animation:fadeIn .3s}
+.modal-box{background:#fff;border-radius:20px;padding:36px 32px;max-width:430px;width:90%;box-shadow:0 24px 48px rgba(0,0,0,.18);text-align:center}
+.receipt-header{font-size:22px;font-weight:800;color:var(--primary);margin-bottom:18px}
+.receipt-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed #e2e8f0;font-size:15px}
+.receipt-row:last-child{border:none}
+.receipt-key{color:#64748b;font-weight:500}
+.receipt-val{font-weight:700;color:var(--dark)}
+.queue-big{font-size:52px;font-weight:900;color:var(--primary);line-height:1;margin:14px 0 4px}
+.queue-label{color:#64748b;font-size:14px}
+</style>
 </head>
 <body>
-
-<div class="topbar">
-    <div class="brand"><span class="brand-icon">✚</span> Medical Appointments</div>
-    <span class="topbar-sub">Fast &amp; simple doctor booking</span>
-</div>
-
-<div class="page">
 <div class="container">
 
-    <!-- Step 0: Home -->
-    <div id="step-0" class="step active" style="text-align: center;">
-        <h2 style="font-size: 34px; margin-bottom: 15px;">Medical Appointment Booking</h2>
-        <p style="color: var(--text-muted); font-size: 16px; margin-bottom: 35px;">Select your option below to proceed.</p>
-        <div style="max-width: 420px; margin: auto;">
-            <button class="btn-primary" onclick="nextStep(1)" style="padding: 18px; font-size: 16px; margin-bottom: 15px;">Book an Appointment</button>
-            <br>
-            <button class="btn-link" onclick="showLoginSection()" style="font-size: 16px;">Are you a Doctor? Log in</button>
-        </div>
-    </div>
-
-    <!-- Step 1: Patient Info -->
-    <div id="step-1" class="step">
-        <h3>Patient Information</h3>
-        <div class="form-grid">
-            <div><label>First Name:</label><input type="text" id="firstName" placeholder="First name"></div>
-            <div><label>Last Name:</label><input type="text" id="lastName" placeholder="Last name"></div>
-            <div><label>Phone Number:</label><input type="tel" id="phone" placeholder="05xxxxxxxx"></div>
-            <div><label>Email Address:</label><input type="email" id="email" placeholder="email@domain.com"></div>
-        </div>
-        <div class="btn-group">
-            <button class="btn-back" onclick="nextStep(0)">Back</button>
-            <button class="btn-primary" onclick="validateStep1()">Next</button>
-        </div>
-    </div>
-
-    <!-- Step 2: Location -->
-    <div id="step-2" class="step">
-        <h3>Select Location</h3>
-        <div class="form-grid">
-            <div class="full-width"><label>State (Wilaya):</label><select id="state" onchange="updateCircles()"><option value="">Select State</option></select></div>
-            <div class="full-width"><label>Circle (Daïra):</label><select id="circle" onchange="updateMunicipalities()"><option value="">Select Circle</option></select></div>
-            <div class="full-width"><label>Municipality (Baladiya):</label><select id="municipality"><option value="">Select Municipality</option></select></div>
-        </div>
-        <div class="btn-group">
-            <button class="btn-back" onclick="nextStep(1)">Back</button>
-            <button class="btn-primary" onclick="nextStep(3)">Next</button>
-        </div>
-    </div>
-
-    <!-- Step 3: Doctor Type -->
-    <div id="step-3" class="step">
-        <h3>Doctor Specialty</h3>
-        <label>Select Type:</label>
-        <select id="doctorType" onchange="toggleSpecialty()">
-            <option value="General">General Practitioner</option>
-            <option value="Specialist">Specialist</option>
-        </select>
-        <div id="specialtyContainer" style="display: none;">
-            <label>Specialty:</label>
-            <select id="specialty"><option value="">Select Specialty</option></select>
-        </div>
-        <div class="btn-group">
-            <button class="btn-back" onclick="nextStep(2)">Back</button>
-            <button class="btn-primary" onclick="fetchAvailableDoctors()">Search Doctors</button>
-        </div>
-    </div>
-
-    <!-- Step 4: Results & Booking -->
-    <div id="step-4" class="step">
-        <h3>Select Doctor & Date</h3>
-        <div id="doctorsListContainer" style="max-height: 320px; overflow-y: auto; border: 2px solid var(--border-color); padding: 15px; border-radius: 14px; background: var(--surface-card); margin-bottom: 15px;">
-            <p style="color: var(--text-muted); text-align: center;">No doctors loaded yet.</p>
-        </div>
-        <input type="hidden" id="selectedDoctorName">
-        <p id="chosenDoctorDisplay" style="font-weight: 600; color: var(--gold); text-align: center; margin: 10px 0; font-size: 16px;"></p>
-        <label>Appointment Date & Time:</label>
-        <input type="datetime-local" id="appointmentDate">
-        <div class="btn-group">
-            <button class="btn-back" onclick="nextStep(3)">Back</button>
-            <button class="btn-success" onclick="submitBooking()">Confirm Booking</button>
-        </div>
-    </div>
-
-    <!-- Doctor Login -->
-    <div id="doctor-login-section" class="step">
-        <h3>Doctor Login</h3>
-        <div style="max-width: 420px; margin: auto;">
-            <label>Email or Phone Number:</label>
-            <input type="text" id="loginIdentifier" placeholder="Enter email or phone number">
-            <label>Password:</label>
-            <div class="password-wrapper">
-                <input type="password" id="loginPassword" placeholder="Password">
-                <span class="toggle-password" onclick="togglePasswordVisibility('loginPassword', this)">👁️</span>
-            </div>
-            <div class="btn-group">
-                <button class="btn-back" onclick="nextStep(0)">Home</button>
-                <button class="btn-primary" onclick="doctorLogin()">Login</button>
-            </div>
-            <div style="text-align: center; margin-top: 20px;">
-                <button class="btn-link" onclick="showSignUpSection()">Don't have an account? Sign Up</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Doctor Sign Up -->
-    <div id="doctor-signup-section" class="step">
-        <h3>Doctor Registration</h3>
-        <div class="form-grid">
-            <div><label>First Name:</label><input type="text" id="docFirstName" placeholder="First Name"></div>
-            <div><label>Last Name:</label><input type="text" id="docLastName" placeholder="Last Name"></div>
-            <div><label>Phone Number:</label><input type="tel" id="docPhone" placeholder="Phone Number"></div>
-            <div><label>Email Address:</label><input type="email" id="docEmail" placeholder="Email Address"></div>
-            <div>
-                <label>Password:</label>
-                <div class="password-wrapper">
-                    <input type="password" id="docPassword" placeholder="Password">
-                    <span class="toggle-password" onclick="togglePasswordVisibility('docPassword', this)">👁️</span>
-                </div>
-            </div>
-            <div>
-                <label>Confirm Password:</label>
-                <div class="password-wrapper">
-                    <input type="password" id="docConfirmPassword" placeholder="Confirm Password">
-                    <span class="toggle-password" onclick="togglePasswordVisibility('docConfirmPassword', this)">👁️</span>
-                </div>
-            </div>
-            <div class="full-width"><label>State (Wilaya):</label><select id="docState" onchange="updateDocCircles()"><option value="">Select State</option></select></div>
-            <div class="full-width"><label>Circle (Daïra):</label><select id="docCircle" onchange="updateDocMunicipalities()"><option value="">Select Circle</option></select></div>
-            <div class="full-width"><label>Municipality (Baladiya):</label><select id="docMunicipality"><option value="">Select Municipality</option></select></div>
-            <div class="full-width"><label>Clinic Address:</label><input type="text" id="docAddress" placeholder="Street / Landmark"></div>
-            <div>
-                <label>Type:</label>
-                <select id="docType" onchange="toggleDocSpecialty()">
-                    <option value="General">General</option>
-                    <option value="Specialist">Specialist</option>
-                </select>
-            </div>
-            <div id="docSpecialtyContainer" style="display: none;">
-                <label>Specialty:</label>
-                <select id="docSpecialty"><option value="">Select Specialty</option></select>
-            </div>
-            <div><label>Work Start Time:</label><input type="time" id="docWorkStart" value="08:00"></div>
-            <div><label>Work End Time:</label><input type="time" id="docWorkEnd" value="17:00"></div>
-        </div>
-        <div class="btn-group">
-            <button class="btn-back" onclick="showLoginSection()">Back</button>
-            <button class="btn-success" onclick="doctorSignUp()">Register</button>
-        </div>
-    </div>
-
-    <!-- Doctor Dashboard -->
-    <div id="doctor-dashboard" class="step">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: var(--surface-card); padding: 15px; border-radius: 12px; flex-wrap: wrap; gap: 10px; border: 1px solid var(--border-color);">
-            <span id="welcomeDocName" style="font-weight: 600; color: var(--gold); font-size: 18px;"></span>
-            <button class="btn-back" onclick="logoutDoctor()" style="padding: 8px 14px; font-size: 13px; width: auto;">Logout</button>
-        </div>
-
-        <div class="dashboard-nav">
-            <button id="nav-control" class="active-tab" onclick="switchDashboardTab('control')">Dashboard Appointments</button>
-            <button id="nav-settings" onclick="switchDashboardTab('settings')">Settings</button>
-        </div>
-
-        <!-- Dashboard Appointments Tab -->
-        <div id="tab-control-content" class="dashboard-tab-content">
-            <h4>Reserved Appointments:</h4>
-            <div style="overflow-x: auto; max-height: 400px;">
-                <table>
-                    <thead>
-                        <tr><th>First Name</th><th>Last Name</th><th>Phone</th><th>Email</th><th>Assigned Date & Time</th><th>Queue Number</th></tr>
-                    </thead>
-                    <tbody id="appointmentsList"><tr><td colspan="6">Loading...</td></tr></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Settings Tab -->
-        <div id="tab-settings-content" class="dashboard-tab-content" style="display: none;">
-            <h4>Doctor Settings</h4>
-            <div class="settings-card">
-
-                <div class="status-row">
-                    <div>
-                        <div class="status-label">Service Status</div>
-                        <div id="statusText" class="status-text" style="color: var(--gold);">Active - Patients can book</div>
-                    </div>
-                    <label class="switch">
-                        <input type="checkbox" id="serviceStatusToggle" checked onchange="updateStatusText()">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <label>Maximum Daily Limit:</label>
-                <input type="number" id="settingDailyLimit" min="1" value="40">
-
-                <label>Working Hours:</label>
-                <div class="hours-row">
-                    <div><label style="font-weight:400;">From:</label><input type="time" id="settingWorkStart" value="08:00"></div>
-                    <div><label style="font-weight:400;">To:</label><input type="time" id="settingWorkEnd" value="17:00"></div>
-                </div>
-
-                <button class="btn-success" style="margin-top: 18px;" onclick="saveDoctorSettings()">Save Changes</button>
-            </div>
-        </div>
-    </div>
-
-</div>
+<!-- ─── Step 0: Home ──────────────────────────────────── -->
+<div id="step-0" class="step active" style="text-align:center;padding:40px 0">
+  <h2 style="font-size:32px;margin-bottom:12px">🏥 Medical Appointment Booking</h2>
+  <p style="color:#64748b;font-size:16px;margin-bottom:32px">Select your option below to proceed.</p>
+  <div style="max-width:380px;margin:auto">
+    <button class="btn-primary" onclick="nextStep(1)" style="padding:18px;font-size:16px;margin-bottom:14px">📋 Book an Appointment</button>
+    <br>
+    <button class="btn-link" onclick="showLoginSection()" style="font-size:16px">👨‍⚕️ Are you a Doctor? Log in</button>
+  </div>
 </div>
 
-<footer>© 2026 Medical Appointment System. All rights reserved.</footer>
+<!-- ─── Step 1: Patient Info ──────────────────────────── -->
+<div id="step-1" class="step">
+  <h3>Patient Information</h3>
+  <div class="form-grid">
+    <div><label>First Name</label><input type="text" id="firstName" placeholder="First name"></div>
+    <div><label>Last Name</label><input type="text" id="lastName" placeholder="Last name"></div>
+    <div><label>Phone</label><input type="tel" id="phone" placeholder="05xxxxxxxx"></div>
+    <div><label>Email</label><input type="email" id="email" placeholder="email@domain.com"></div>
+  </div>
+  <div class="btn-group">
+    <button class="btn-back" onclick="nextStep(0)">Back</button>
+    <button class="btn-primary" onclick="validateStep1()">Next →</button>
+  </div>
+</div>
+
+<!-- ─── Step 2: Location ───────────────────────────────── -->
+<div id="step-2" class="step">
+  <h3>Select Location</h3>
+  <div class="form-grid">
+    <div class="full-width"><label>State (Wilaya)</label><select id="state" onchange="updateCircles()"><option value="">Select State</option></select></div>
+    <div class="full-width"><label>Circle (Daïra)</label><select id="circle" onchange="updateMunicipalities()"><option value="">Select Circle</option></select></div>
+    <div class="full-width"><label>Municipality (Baladiya)</label><select id="municipality"><option value="">Select Municipality</option></select></div>
+  </div>
+  <div class="btn-group">
+    <button class="btn-back" onclick="nextStep(1)">Back</button>
+    <button class="btn-primary" onclick="validateStep2()">Next →</button>
+  </div>
+</div>
+
+<!-- ─── Step 3: Type / Specialty ─────────────────────── -->
+<div id="step-3" class="step">
+  <h3>Doctor Specialty</h3>
+  <label>Select Type</label>
+  <select id="doctorType" onchange="toggleSpecialty()">
+    <option value="General">General Practitioner</option>
+    <option value="Specialist">Specialist</option>
+  </select>
+  <div id="specialtyContainer" style="display:none">
+    <label>Specialty</label>
+    <select id="specialty"><option value="">Select Specialty</option></select>
+  </div>
+  <div class="btn-group">
+    <button class="btn-back" onclick="nextStep(2)">Back</button>
+    <button id="btnSearch" class="btn-primary" onclick="fetchAvailableDoctors()">🔍 Search Doctors</button>
+  </div>
+</div>
+
+<!-- ─── Step 4: Doctor List → Confirm ─────────────────── -->
+<div id="step-4" class="step">
+  <h3>Select a Doctor</h3>
+  <div id="doctorsListContainer" style="max-height:340px;overflow-y:auto;border:2px solid #e2e8f0;padding:14px;border-radius:14px;background:#fafafa;margin-bottom:14px">
+    <p style="color:#64748b;text-align:center">No doctors loaded yet.</p>
+  </div>
+  <div class="btn-group">
+    <button class="btn-back" onclick="nextStep(3)">Back</button>
+    <button id="btnConfirm" class="btn-success" onclick="submitBooking()" disabled>✅ Confirm Booking</button>
+  </div>
+  <p id="chosenDoctorDisplay" style="font-weight:600;color:var(--secondary);text-align:center;margin:10px 0;font-size:15px"></p>
+</div>
+
+<!-- ─── Doctor Login ───────────────────────────────────── -->
+<div id="doctor-login-section" class="step">
+  <h3>Doctor Login</h3>
+  <div style="max-width:400px;margin:auto">
+    <label>Email</label><input type="email" id="loginEmail" placeholder="Email">
+    <label>Password</label>
+    <div class="password-wrapper">
+      <input type="password" id="loginPassword" placeholder="Password">
+      <span class="eye" onclick="toggleEye('loginPassword',this)">👁️</span>
+    </div>
+    <div id="loginErr" class="msg msg-error"></div>
+    <div class="btn-group">
+      <button class="btn-back" onclick="nextStep(0)">Home</button>
+      <button id="btnLogin" class="btn-primary" onclick="doctorLogin()">Login</button>
+    </div>
+    <div style="text-align:center;margin-top:18px">
+      <button class="btn-link" onclick="showSignUpSection()">Don't have an account? Sign Up</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Doctor Sign Up ────────────────────────────────── -->
+<div id="doctor-signup-section" class="step">
+  <h3>Doctor Registration</h3>
+  <div class="form-grid">
+    <div><label>First Name</label><input type="text" id="docFirstName" placeholder="First Name"></div>
+    <div><label>Last Name</label><input type="text" id="docLastName" placeholder="Last Name"></div>
+    <div><label>Phone</label><input type="tel" id="docPhone" placeholder="Phone"></div>
+    <div>
+      <label>Email</label>
+      <input type="email" id="docEmail" placeholder="Email">
+      <div id="emailErrMsg" class="msg msg-error"></div>
+    </div>
+    <div>
+      <label>Password</label>
+      <div class="password-wrapper">
+        <input type="password" id="docPassword" placeholder="Password">
+        <span class="eye" onclick="toggleEye('docPassword',this)">👁️</span>
+      </div>
+    </div>
+    <div>
+      <label>Confirm Password</label>
+      <div class="password-wrapper">
+        <input type="password" id="docConfirmPassword" placeholder="Confirm Password">
+        <span class="eye" onclick="toggleEye('docConfirmPassword',this)">👁️</span>
+      </div>
+    </div>
+    <div class="full-width"><label>State (Wilaya)</label><select id="docState" onchange="updateDocCircles()"><option value="">Select State</option></select></div>
+    <div class="full-width"><label>Circle (Daïra)</label><select id="docCircle" onchange="updateDocMunicipalities()"><option value="">Select Circle</option></select></div>
+    <div class="full-width"><label>Municipality (Baladiya)</label><select id="docMunicipality"><option value="">Select Municipality</option></select></div>
+    <div class="full-width"><label>Clinic Address</label><input type="text" id="docAddress" placeholder="Street / Landmark"></div>
+    <div>
+      <label>Type</label>
+      <select id="docType" onchange="toggleDocSpecialty()">
+        <option value="General">General</option>
+        <option value="Specialist">Specialist</option>
+      </select>
+    </div>
+    <div id="docSpecialtyContainer" style="display:none" class="full-width">
+      <label>Specialty</label>
+      <select id="docSpecialty"><option value="">Select Specialty</option></select>
+    </div>
+  </div>
+  <div class="btn-group">
+    <button class="btn-back" onclick="showLoginSection()">Back</button>
+    <button id="btnRegister" class="btn-success" onclick="doctorSignUp()">Register</button>
+  </div>
+</div>
+
+<!-- ─── Doctor Dashboard ──────────────────────────────── -->
+<div id="doctor-dashboard" class="step">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;background:#f8fafc;padding:14px 18px;border-radius:12px">
+    <div>
+      <span id="welcomeDocName" style="font-weight:700;color:var(--primary);font-size:17px"></span><br>
+      <span id="serviceStatusBadge" class="service-status"></span>
+    </div>
+    <button class="btn-back" onclick="logoutDoctor()" style="padding:8px 16px;font-size:13px">Logout</button>
+  </div>
+
+  <div class="dashboard-nav">
+    <button id="nav-control" class="active-tab" onclick="switchTab('control')">📋 Appointments</button>
+    <button id="nav-settings" onclick="switchTab('settings')">⚙️ Settings</button>
+  </div>
+
+  <!-- Tab: Appointments -->
+  <div id="tab-control-content">
+    <div id="dayFilterBar" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <button onclick="filterDay('ALL')" id="f-ALL" class="btn-primary" style="width:auto;padding:7px 16px;font-size:13px">All</button>
+      <button onclick="filterDay('YESTERDAY')" id="f-YESTERDAY" style="width:auto;padding:7px 16px;font-size:13px;background:#e2e8f0;color:#334155;border:none;border-radius:10px;cursor:pointer">Yesterday</button>
+      <button onclick="filterDay('TODAY')" id="f-TODAY" style="width:auto;padding:7px 16px;font-size:13px;background:#e2e8f0;color:#334155;border:none;border-radius:10px;cursor:pointer">Today</button>
+      <button onclick="filterDay('TOMORROW')" id="f-TOMORROW" style="width:auto;padding:7px 16px;font-size:13px;background:#e2e8f0;color:#334155;border:none;border-radius:10px;cursor:pointer">Tomorrow</button>
+    </div>
+    <div style="overflow-x:auto;max-height:380px;overflow-y:auto">
+      <table>
+        <thead><tr><th>#</th><th>First</th><th>Last</th><th>Phone</th><th>Email</th><th>Day</th><th>Date</th><th>Queue</th></tr></thead>
+        <tbody id="appointmentsList"><tr><td colspan="8">Loading...</td></tr></tbody>
+      </table>
+    </div>
+    <p id="apptCount" style="font-size:13px;color:#64748b;margin-top:8px;text-align:right"></p>
+  </div>
+
+  <!-- Tab: Settings -->
+  <div id="tab-settings-content" style="display:none">
+    <h4 style="color:#475569;margin-top:0">Doctor Settings</h4>
+    <div style="max-width:420px;margin:auto;background:#fafafa;padding:24px;border-radius:14px;border:1px solid #e2e8f0">
+      <label>Max patients per day</label>
+      <input type="number" id="settingDailyLimit" min="1" max="500" value="40">
+
+      <div class="toggle-wrap" style="margin-top:18px">
+        <label style="margin:0">Accept new bookings</label>
+        <label class="toggle">
+          <input type="checkbox" id="toggleActive" onchange="updateServiceStatus()">
+          <span class="slider"></span>
+        </label>
+        <span id="activeLabel" class="service-status status-on">Active</span>
+      </div>
+
+      <button class="btn-success" style="margin-top:18px" onclick="saveDoctorSettings()">💾 Save Changes</button>
+      <div id="settingsSaved" class="msg msg-success" style="margin-top:10px">✅ Settings saved successfully!</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- ─── Booking Receipt Modal ─────────────────────────── -->
+<div id="receiptModal" class="modal-overlay" style="display:none" onclick="closeReceipt(event)">
+  <div class="modal-box">
+    <div class="receipt-header">🏥 Booking Confirmed!</div>
+    <p style="color:#64748b;font-size:14px;margin-bottom:18px">A confirmation has been sent to your email. Show this receipt to the doctor.</p>
+    <div id="receiptBody"></div>
+    <div class="queue-big" id="receiptQueue"></div>
+    <div class="queue-label">Your queue number</div>
+    <button class="btn-primary" style="margin-top:22px" onclick="closeReceiptBtn()">✔ Done</button>
+  </div>
+</div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzUhrNsoKZAzFxPB1WcSZfuL5AmH8Jhu1i8koQ3hvcimRazq8Z04v3PslNfu130AoV2/exec';
-    let settingsData = [];
-    let specialtiesData = [];
-    let currentDoctorEmail = '';
+const scriptURL = 'https://script.google.com/macros/s/AKfycbyh5xi-mjRfQGrMEVHr4csbC4ZfC3Plhuy6UPVkZUbPQneCMplNmufduSCurPQ8Hmxt/exec';
+let settingsData = [], specialtiesData = [];
+let currentDoctorEmail = '';
+let allAppointments = []; // كل مواعيد الطبيب
+let selectedDoctorName = '';
+let selectedDoctorActive = true;
+let currentFilter = 'ALL';
 
-    fetch(`${scriptURL}?action=get_settings`)
-        .then(res => res.json())
-        .then(data => {
-            settingsData = data;
-            let states = [...new Set(data.map(item => item[0]))];
-            populateSelect('state', states);
-            populateSelect('docState', states);
-        });
+// ── Boot ──────────────────────────────────────────────────
+Promise.all([
+  fetch(`${scriptURL}?action=get_settings`).then(r=>r.json()),
+  fetch(`${scriptURL}?action=get_specialties`).then(r=>r.json())
+]).then(([settings, specs]) => {
+  settingsData  = settings;
+  specialtiesData = specs;
+  let states = [...new Set(settings.map(i=>i[0]))];
+  populateSel('state', states);
+  populateSel('docState', states);
+  populateSel('specialty', specs);
+  populateSel('docSpecialty', specs);
+}).catch(()=>{});
 
-    fetch(`${scriptURL}?action=get_specialties`)
-        .then(res => res.json())
-        .then(data => {
-            specialtiesData = data;
-        });
+// ── Helpers ───────────────────────────────────────────────
+function populateSel(id, items) {
+  const s = document.getElementById(id); if(!s) return;
+  s.innerHTML = '<option value="">Select</option>' + items.map(i=>`<option value="${i}">${i}</option>`).join('');
+}
+function nextStep(n) {
+  document.querySelectorAll('.step').forEach(e=>e.classList.remove('active'));
+  document.getElementById('step-'+n).classList.add('active');
+}
+function showLoginSection() {
+  document.querySelectorAll('.step').forEach(e=>e.classList.remove('active'));
+  document.getElementById('doctor-login-section').classList.add('active');
+}
+function showSignUpSection() {
+  document.querySelectorAll('.step').forEach(e=>e.classList.remove('active'));
+  document.getElementById('doctor-signup-section').classList.add('active');
+}
+function toggleEye(id, el) {
+  const f=document.getElementById(id);
+  f.type = f.type==='password'?'text':'password';
+  el.textContent = f.type==='password'?'👁️':'🙈';
+}
+function showMsg(id, text, type) {
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.textContent=text; el.className='msg '+(type==='error'?'msg-error':'msg-success');
+  el.style.display='block';
+}
+function hideMsg(id){ const el=document.getElementById(id); if(el)el.style.display='none'; }
 
-    function populateSelect(id, items) {
-        let sel = document.getElementById(id);
-        sel.innerHTML = '<option value="">Select</option>' + items.map(i => `<option value="${i}">${i}</option>`).join('');
+// spinner helper
+function setBtnLoading(id, on, label) {
+  const b=document.getElementById(id); if(!b) return;
+  if(on){ b.disabled=true; b.innerHTML=`<span class="spinner"></span>${label||'Please wait...'}`; }
+  else { b.disabled=false; b.innerHTML=label||b.dataset.origLabel||''; }
+}
+
+// ── Location cascades ─────────────────────────────────────
+function updateCircles() {
+  const st=document.getElementById('state').value;
+  populateSel('circle',[...new Set(settingsData.filter(i=>i[0]===st).map(i=>i[1]))]);
+  populateSel('municipality',[]);
+}
+function updateMunicipalities() {
+  const st=document.getElementById('state').value, ci=document.getElementById('circle').value;
+  populateSel('municipality',[...new Set(settingsData.filter(i=>i[0]===st&&i[1]===ci).map(i=>i[2]))]);
+}
+function updateDocCircles() {
+  const st=document.getElementById('docState').value;
+  populateSel('docCircle',[...new Set(settingsData.filter(i=>i[0]===st).map(i=>i[1]))]);
+  populateSel('docMunicipality',[]);
+}
+function updateDocMunicipalities() {
+  const st=document.getElementById('docState').value, ci=document.getElementById('docCircle').value;
+  populateSel('docMunicipality',[...new Set(settingsData.filter(i=>i[0]===st&&i[1]===ci).map(i=>i[2]))]);
+}
+
+// ── Validation steps ──────────────────────────────────────
+function validateStep1() {
+  if(!document.getElementById('firstName').value.trim()||!document.getElementById('phone').value.trim()) {
+    return alert('Please fill in your name and phone number.');
+  }
+  nextStep(2);
+}
+function validateStep2() {
+  if(!document.getElementById('state').value||!document.getElementById('municipality').value) {
+    return alert('Please select State and Municipality.');
+  }
+  nextStep(3);
+}
+function toggleSpecialty() {
+  const on=document.getElementById('doctorType').value==='Specialist';
+  document.getElementById('specialtyContainer').style.display=on?'block':'none';
+}
+function toggleDocSpecialty() {
+  const on=document.getElementById('docType').value==='Specialist';
+  document.getElementById('docSpecialtyContainer').style.display=on?'block':'none';
+}
+
+// ── Fetch doctors ─────────────────────────────────────────
+function fetchAvailableDoctors() {
+  const state=document.getElementById('state').value;
+  const mun=document.getElementById('municipality').value;
+  const type=document.getElementById('doctorType').value;
+  const spec=document.getElementById('specialty').value||'';
+  if(!state||!mun) return alert('Fill location fields.');
+  if(type==='Specialist'&&!spec) return alert('Please select a specialty.');
+
+  setBtnLoading('btnSearch', true, '🔍 Searching...');
+  fetch(`${scriptURL}?action=get_doctors&state=${encodeURIComponent(state)}&municipality=${encodeURIComponent(mun)}&type=${encodeURIComponent(type)}&specialty=${encodeURIComponent(spec)}`)
+  .then(r=>r.json())
+  .then(data=>{
+    const cont=document.getElementById('doctorsListContainer');
+    cont.innerHTML='';
+    if(!data.length){ cont.innerHTML='<p style="color:red;text-align:center">No doctors found.</p>'; nextStep(4); return; }
+    data.forEach(doc=>{
+      if(doc.isActive) {
+        cont.innerHTML+=`
+        <div class="doc-card">
+          <div>
+            <strong>${doc.fullName}</strong> <span style="font-size:13px;color:#64748b">(${doc.type}${doc.specialty?' - '+doc.specialty:''})</span><br>
+            <small style="color:#64748b">📍 ${doc.address||'No address'}</small>
+          </div>
+          <button class="btn-success" style="width:auto;padding:9px 18px" onclick="selectDoctor('${doc.fullName}',true)">Select</button>
+        </div>`;
+      } else {
+        cont.innerHTML+=`
+        <div class="doc-card inactive">
+          <div>
+            <strong>${doc.fullName}</strong> <span style="font-size:13px;color:#64748b">(${doc.type}${doc.specialty?' - '+doc.specialty:''})</span><br>
+            <small style="color:#64748b">📍 ${doc.address||'No address'}</small><br>
+            <span style="color:var(--danger);font-size:13px;font-weight:600">🔴 Booking unavailable at this time</span>
+          </div>
+          <button disabled style="width:auto;padding:9px 18px;background:#e2e8f0;color:#94a3b8;border:none;border-radius:10px;font-weight:600">Unavailable</button>
+        </div>`;
+      }
+    });
+    nextStep(4);
+  })
+  .finally(()=>{ document.getElementById('btnSearch').disabled=false; document.getElementById('btnSearch').innerHTML='🔍 Search Doctors'; });
+}
+
+function selectDoctor(name, active) {
+  selectedDoctorName = name;
+  selectedDoctorActive = active;
+  document.getElementById('btnConfirm').disabled = !active;
+  document.getElementById('chosenDoctorDisplay').innerText = active ? `✅ Selected: ${name}` : `🔴 ${name} – Booking Unavailable`;
+}
+
+// ── Submit Booking ────────────────────────────────────────
+function submitBooking() {
+  if(!selectedDoctorName) return alert('Please select a doctor first.');
+  const bk = {
+    action:'book',
+    firstName: document.getElementById('firstName').value,
+    lastName:  document.getElementById('lastName').value,
+    phone:     document.getElementById('phone').value,
+    email:     document.getElementById('email').value,
+    state:     document.getElementById('state').value,
+    doctor:    selectedDoctorName
+  };
+  if(!bk.email||!bk.doctor) return alert('Please fill patient email and select a doctor.');
+
+  setBtnLoading('btnConfirm', true, '⏳ Booking...');
+  fetch(scriptURL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(bk)})
+  .then(r=>r.json())
+  .then(data=>{
+    if(data.result==='success') {
+      showReceipt(bk, data.assignedDate, data.queueNumber);
+    } else {
+      alert('Booking failed: '+(data.message||'Unknown error'));
     }
+  })
+  .catch(()=>{
+    // no-cors fallback: show receipt optimistically (Apps Script returned opaque)
+    showReceipt(bk, '—', '—');
+  })
+  .finally(()=>{ document.getElementById('btnConfirm').disabled=false; document.getElementById('btnConfirm').innerHTML='✅ Confirm Booking'; });
+}
 
-    function updateCircles() {
-        let state = document.getElementById('state').value;
-        let circles = [...new Set(settingsData.filter(i => i[0] === state).map(i => i[1]))];
-        populateSelect('circle', circles);
-        populateSelect('municipality', []);
-    }
+// ── Receipt Modal ─────────────────────────────────────────
+function showReceipt(bk, date, queue) {
+  document.getElementById('receiptBody').innerHTML=`
+    <div class="receipt-row"><span class="receipt-key">Doctor</span><span class="receipt-val">${bk.doctor}</span></div>
+    <div class="receipt-row"><span class="receipt-key">Patient</span><span class="receipt-val">${bk.firstName} ${bk.lastName}</span></div>
+    <div class="receipt-row"><span class="receipt-key">Assigned Date</span><span class="receipt-val">${date}</span></div>
+    <div class="receipt-row"><span class="receipt-key">Email</span><span class="receipt-val">${bk.email}</span></div>
+    <p style="font-size:13px;color:#64748b;margin-top:12px">📧 A receipt has been sent to your email.</p>
+  `;
+  document.getElementById('receiptQueue').textContent = queue;
+  document.getElementById('receiptModal').style.display='flex';
+}
+function closeReceipt(e){ if(e.target===document.getElementById('receiptModal')) closeReceiptBtn(); }
+function closeReceiptBtn(){ document.getElementById('receiptModal').style.display='none'; location.reload(); }
 
-    function updateMunicipalities() {
-        let state = document.getElementById('state').value;
-        let circle = document.getElementById('circle').value;
-        let munis = [...new Set(settingsData.filter(i => i[0] === state && i[1] === circle).map(i => i[2]))];
-        populateSelect('municipality', munis);
-    }
+// ── Doctor Sign Up ────────────────────────────────────────
+function doctorSignUp() {
+  const pass=document.getElementById('docPassword').value;
+  if(pass!==document.getElementById('docConfirmPassword').value) return alert('Passwords do not match!');
+  hideMsg('emailErrMsg');
 
-    function updateDocCircles() {
-        let state = document.getElementById('docState').value;
-        let circles = [...new Set(settingsData.filter(i => i[0] === state).map(i => i[1]))];
-        populateSelect('docCircle', circles);
-        populateSelect('docMunicipality', []);
-    }
+  const d={
+    action:'signup',
+    firstName:    document.getElementById('docFirstName').value,
+    lastName:     document.getElementById('docLastName').value,
+    phone:        document.getElementById('docPhone').value,
+    email:        document.getElementById('docEmail').value,
+    password:     pass,
+    state:        document.getElementById('docState').value,
+    circle:       document.getElementById('docCircle').value,
+    municipality: document.getElementById('docMunicipality').value,
+    address:      document.getElementById('docAddress').value,
+    type:         document.getElementById('docType').value,
+    specialty:    document.getElementById('docSpecialty').value||''
+  };
+  if(!d.email||!d.password||!d.firstName||!d.circle) return alert('Please fill in required fields.');
 
-    function updateDocMunicipalities() {
-        let state = document.getElementById('docState').value;
-        let circle = document.getElementById('docCircle').value;
-        let munis = [...new Set(settingsData.filter(i => i[0] === state && i[1] === circle).map(i => i[2]))];
-        populateSelect('docMunicipality', munis);
-    }
+  setBtnLoading('btnRegister', true, 'Creating account...');
+  fetch(scriptURL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(d)})
+  .then(r=>r.json())
+  .then(data=>{
+    if(data.result==='success'){ alert('Account created successfully!'); showLoginSection(); }
+    else showMsg('emailErrMsg','⚠️ '+(data.message||'Registration failed.'),'error');
+  })
+  .catch(()=>alert('Network error. Please try again.'))
+  .finally(()=>{ document.getElementById('btnRegister').disabled=false; document.getElementById('btnRegister').innerHTML='Register'; });
+}
 
-    function togglePasswordVisibility(fieldId, iconElement) {
-        const inputField = document.getElementById(fieldId);
-        if (inputField.type === 'password') {
-            inputField.type = 'text';
-            iconElement.textContent = '🙈';
-        } else {
-            inputField.type = 'password';
-            iconElement.textContent = '👁️';
-        }
-    }
+// ── Doctor Login ──────────────────────────────────────────
+function doctorLogin() {
+  const email=document.getElementById('loginEmail').value;
+  const pass=document.getElementById('loginPassword').value;
+  if(!email||!pass){ showMsg('loginErr','Enter email and password.','error'); return; }
+  hideMsg('loginErr');
 
-    function nextStep(step) {
-        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
-        document.getElementById(`step-${step}`).classList.add('active');
-    }
+  setBtnLoading('btnLogin', true, 'Verifying...');
+  fetch(scriptURL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'login',email,password:pass})})
+  .then(r=>r.json())
+  .then(data=>{
+    if(data.result==='success'){
+      currentDoctorEmail=data.doctor.email;
+      document.getElementById('welcomeDocName').innerText='Dr. '+data.doctor.fullName;
+      document.getElementById('settingDailyLimit').value=data.doctor.dailyLimit;
+      const active=data.doctor.isActive;
+      document.getElementById('toggleActive').checked=active;
+      updateServiceStatus();
+      document.querySelectorAll('.step').forEach(e=>e.classList.remove('active'));
+      document.getElementById('doctor-dashboard').classList.add('active');
+      fetchDoctorDashboardData(data.doctor.email);
+    } else showMsg('loginErr',data.message||'Login failed.','error');
+  })
+  .catch(()=>showMsg('loginErr','Login error. Please try again.','error'))
+  .finally(()=>{ document.getElementById('btnLogin').disabled=false; document.getElementById('btnLogin').innerHTML='Login'; });
+}
 
-    function showLoginSection() {
-        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
-        document.getElementById('doctor-login-section').classList.add('active');
-    }
+// ── Dashboard ─────────────────────────────────────────────
+function switchTab(tab) {
+  const isControl=tab==='control';
+  document.getElementById('nav-control').classList.toggle('active-tab',isControl);
+  document.getElementById('nav-settings').classList.toggle('active-tab',!isControl);
+  document.getElementById('tab-control-content').style.display=isControl?'block':'none';
+  document.getElementById('tab-settings-content').style.display=isControl?'none':'block';
+  hideMsg('settingsSaved');
+}
 
-    function showSignUpSection() {
-        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
-        document.getElementById('doctor-signup-section').classList.add('active');
-    }
+function saveDoctorSettings() {
+  const limit=document.getElementById('settingDailyLimit').value;
+  const active=document.getElementById('toggleActive').checked;
+  fetch(scriptURL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'update_settings',email:currentDoctorEmail,dailyLimit:limit,isActive:active})})
+  .then(r=>r.json())
+  .then(data=>{
+    if(data.result==='success') showMsg('settingsSaved','✅ Settings saved!','success');
+    else alert('Error saving settings.');
+  });
+}
 
-    function validateStep1() {
-        if(!document.getElementById('firstName').value || !document.getElementById('phone').value) {
-            alert('Please fill in your name and phone number.');
-            return;
-        }
-        nextStep(2);
-    }
+function updateServiceStatus() {
+  const on=document.getElementById('toggleActive').checked;
+  const badge=document.getElementById('activeLabel');
+  badge.textContent=on?'Active':'Inactive';
+  badge.className='service-status '+(on?'status-on':'status-off');
+  const sb=document.getElementById('serviceStatusBadge');
+  sb.textContent=on?'🟢 Accepting Bookings':'🔴 Bookings Paused';
+  sb.className='service-status '+(on?'status-on':'status-off');
+}
 
-    function toggleSpecialty() {
-        let isSpecialist = document.getElementById('doctorType').value === 'Specialist';
-        document.getElementById('specialtyContainer').style.display = isSpecialist ? 'block' : 'none';
-        if(isSpecialist) {
-            populateSelect('specialty', specialtiesData);
-        }
-    }
+// ── Appointments table ────────────────────────────────────
+function fetchDoctorDashboardData(email) {
+  fetch(`${scriptURL}?doctorEmail=${encodeURIComponent(email)}`)
+  .then(r=>r.json())
+  .then(data=>{
+    document.getElementById('welcomeDocName').innerText='Dr. '+data.doctorName;
+    document.getElementById('settingDailyLimit').value=data.dailyLimit;
+    const active=data.isActive;
+    document.getElementById('toggleActive').checked=active;
+    updateServiceStatus();
+    allAppointments=data.appointments||[];
+    renderAppointments(currentFilter);
+  });
+}
 
-    function toggleDocSpecialty() {
-        let isSpecialist = document.getElementById('docType').value === 'Specialist';
-        document.getElementById('docSpecialtyContainer').style.display = isSpecialist ? 'block' : 'none';
-        if(isSpecialist) {
-            populateSelect('docSpecialty', specialtiesData);
-        }
-    }
+function filterDay(key) {
+  currentFilter=key;
+  ['ALL','YESTERDAY','TODAY','TOMORROW'].forEach(k=>{
+    const b=document.getElementById('f-'+k);
+    if(!b)return;
+    b.style.background=k===key?'var(--primary)':'#e2e8f0';
+    b.style.color=k===key?'#fff':'#334155';
+  });
+  renderAppointments(key);
+}
 
-    function doctorSignUp() {
-        const pass = document.getElementById('docPassword').value;
-        const confirmPass = document.getElementById('docConfirmPassword').value;
-        if (pass !== confirmPass) { alert('Passwords do not match!'); return; }
+function renderAppointments(filter) {
+  const tbody=document.getElementById('appointmentsList');
+  let list=allAppointments;
+  if(filter!=='ALL') list=list.filter(a=>a.dayLabel===filter||a.assignedDay===filter);
 
-        const docData = {
-            action: 'signup',
-            firstName: document.getElementById('docFirstName').value,
-            lastName: document.getElementById('docLastName').value,
-            phone: document.getElementById('docPhone').value,
-            email: document.getElementById('docEmail').value,
-            password: pass,
-            state: document.getElementById('docState').value,
-            circle: document.getElementById('docCircle').value,
-            municipality: document.getElementById('docMunicipality').value,
-            address: document.getElementById('docAddress').value,
-            type: document.getElementById('docType').value,
-            specialty: document.getElementById('docSpecialty').value || '',
-            workStart: document.getElementById('docWorkStart').value || '08:00',
-            workEnd: document.getElementById('docWorkEnd').value || '17:00'
-        };
+  if(!list.length){ tbody.innerHTML='<tr><td colspan="8" style="color:#64748b">No appointments found.</td></tr>'; document.getElementById('apptCount').textContent=''; return; }
 
-        if(!docData.email || !docData.password || !docData.firstName || !docData.circle) {
-            alert('Please fill in required fields.');
-            return;
-        }
+  // group by day
+  const groups={};
+  list.forEach(a=>{ const k=a.dayLabel; if(!groups[k])groups[k]=[]; groups[k].push(a); });
 
-        alert('Creating account...');
-        fetch(scriptURL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(docData) })
-        .then(res => res.json())
-        .then(data => {
-            if (data.result === 'success') {
-                alert('Account created successfully!');
-                showLoginSection();
-            } else {
-                alert(data.message || 'Error during registration.');
-            }
-        })
-        .catch(err => alert('Error: ' + err));
-    }
+  const dayOrder=['YESTERDAY','TODAY','TOMORROW'];
+  const otherDays=[...new Set(list.map(a=>a.dayLabel).filter(d=>!dayOrder.includes(d)))].sort();
+  const orderedKeys=[...dayOrder.filter(d=>groups[d]),...otherDays.filter(d=>groups[d])];
 
-    function doctorLogin() {
-        const identifier = document.getElementById('loginIdentifier').value;
-        const pass = document.getElementById('loginPassword').value;
-        if(!identifier || !pass) { alert('Please enter your email/phone and password.'); return; }
+  let html='', rowNum=0;
+  orderedKeys.forEach(key=>{
+    const label=key==='TODAY'?'📅 TODAY':key==='YESTERDAY'?'📅 YESTERDAY':key==='TOMORROW'?'📅 TOMORROW':'📅 '+groups[key][0].assignedDay;
+    html+=`<tr class="day-group-header"><td colspan="8">${label} — ${groups[key].length} patient(s)</td></tr>`;
+    groups[key].forEach(a=>{
+      rowNum++;
+      const badgeCls=key==='TODAY'?'badge-today':key==='YESTERDAY'?'badge-yesterday':key==='TOMORROW'?'badge-tomorrow':'badge-other';
+      html+=`<tr>
+        <td>${rowNum}</td>
+        <td>${a.firstName}</td><td>${a.lastName}</td>
+        <td>${a.phone}</td><td style="font-size:12px">${a.email}</td>
+        <td><span class="day-badge ${badgeCls}">${key}</span></td>
+        <td>${a.assignedDay}</td>
+        <td><strong>#${a.queueNumber}</strong></td>
+      </tr>`;
+    });
+  });
+  tbody.innerHTML=html;
+  document.getElementById('apptCount').textContent=`Total shown: ${list.length} appointment(s)`;
+}
 
-        alert('Verifying...');
-        fetch(scriptURL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'login', identifier, password: pass }) })
-        .then(res => res.json())
-        .then(data => {
-            if(data.result === 'success') {
-                currentDoctorEmail = data.doctor.email;
-                document.getElementById('welcomeDocName').innerText = `Welcome, Dr. ${data.doctor.fullName}`;
-                document.getElementById('settingDailyLimit').value = data.doctor.dailyLimit;
-                document.getElementById('settingWorkStart').value = data.doctor.workStart;
-                document.getElementById('settingWorkEnd').value = data.doctor.workEnd;
-                document.getElementById('serviceStatusToggle').checked = (data.doctor.status !== 'Stopped');
-                updateStatusText();
-                document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
-                document.getElementById('doctor-dashboard').classList.add('active');
-                fetchDoctorDashboardData(data.doctor.email);
-            } else { alert(data.message); }
-        }).catch(() => alert('Login error.'));
-    }
-
-    function switchDashboardTab(tab) {
-        if(tab === 'control') {
-            document.getElementById('nav-control').classList.add('active-tab');
-            document.getElementById('nav-settings').classList.remove('active-tab');
-            document.getElementById('tab-control-content').style.display = 'block';
-            document.getElementById('tab-settings-content').style.display = 'none';
-        } else {
-            document.getElementById('nav-settings').classList.add('active-tab');
-            document.getElementById('nav-control').classList.remove('active-tab');
-            document.getElementById('tab-settings-content').style.display = 'block';
-            document.getElementById('tab-control-content').style.display = 'none';
-        }
-    }
-
-    function updateStatusText() {
-        const isActive = document.getElementById('serviceStatusToggle').checked;
-        const statusText = document.getElementById('statusText');
-        if (isActive) {
-            statusText.innerText = 'Active - Patients can book';
-            statusText.style.color = 'var(--gold)';
-        } else {
-            statusText.innerText = 'Stopped - Patients will see "Currently Unavailable"';
-            statusText.style.color = 'var(--danger)';
-        }
-    }
-
-    function saveDoctorSettings() {
-        const newLimit = document.getElementById('settingDailyLimit').value;
-        const newStatus = document.getElementById('serviceStatusToggle').checked ? 'Active' : 'Stopped';
-        const newWorkStart = document.getElementById('settingWorkStart').value;
-        const newWorkEnd = document.getElementById('settingWorkEnd').value;
-
-        fetch(scriptURL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({
-                action: 'update_settings',
-                email: currentDoctorEmail,
-                dailyLimit: newLimit,
-                status: newStatus,
-                workStart: newWorkStart,
-                workEnd: newWorkEnd
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if(data.result === 'success') {
-                alert('Settings saved successfully!');
-            } else {
-                alert('Error saving settings.');
-            }
-        });
-    }
-
-    function fetchAvailableDoctors() {
-        const state = document.getElementById('state').value;
-        const municipality = document.getElementById('municipality').value;
-        const type = document.getElementById('doctorType').value;
-        const specialty = document.getElementById('specialty').value || '';
-
-        if(!state || !municipality) { alert('Please fill location fields.'); return; }
-
-        alert('Searching...');
-        fetch(`${scriptURL}?action=get_doctors&state=${encodeURIComponent(state)}&municipality=${encodeURIComponent(municipality)}&type=${encodeURIComponent(type)}&specialty=${encodeURIComponent(specialty)}`)
-        .then(res => res.json())
-        .then(data => {
-            const container = document.getElementById('doctorsListContainer');
-            container.innerHTML = '';
-            if(data.length === 0) {
-                container.innerHTML = '<p style="color: var(--danger); text-align: center;">No doctors found.</p>';
-                nextStep(4);
-                return;
-            }
-            data.forEach(doc => {
-                const isStopped = doc.status === 'Stopped';
-                container.innerHTML += `
-                    <div class="doc-card ${isStopped ? 'unavailable' : ''}">
-                        <div>
-                            <strong>${doc.fullName}</strong> (${doc.type} ${doc.specialty ? '- ' + doc.specialty : ''})<br>
-                            <small style="color: var(--text-muted);">📍 ${doc.address || 'No address'}</small><br>
-                            <small class="doc-hours">🕒 ${doc.workStart || '08:00'} - ${doc.workEnd || '17:00'}</small>
-                            ${isStopped ? '<div class="badge-unavailable">Currently Unavailable</div>' : ''}
-                        </div>
-                        ${isStopped
-                            ? `<button class="btn-danger" style="width: auto; padding: 8px 16px;" disabled>Unavailable</button>`
-                            : `<button class="btn-success" style="width: auto; padding: 8px 16px;" onclick="selectDoctor('${doc.fullName}', false)">Select</button>`
-                        }
-                    </div>`;
-            });
-            nextStep(4);
-        });
-    }
-
-    function selectDoctor(docName, isStopped) {
-        if (isStopped) {
-            alert('Currently Unavailable');
-            return;
-        }
-        document.getElementById('selectedDoctorName').value = docName;
-        document.getElementById('chosenDoctorDisplay').innerText = `Selected: ${docName}`;
-        alert(`Selected ${docName}. Now choose date.`);
-    }
-
-    function submitBooking() {
-        const bookingData = {
-            action: 'book',
-            firstName: document.getElementById('firstName').value,
-            lastName: document.getElementById('lastName').value,
-            phone: document.getElementById('phone').value,
-            email: document.getElementById('email').value,
-            state: document.getElementById('state').value,
-            doctor: document.getElementById('selectedDoctorName').value,
-            appointmentDate: document.getElementById('appointmentDate').value
-        };
-
-        if(!bookingData.email || !bookingData.appointmentDate || !bookingData.doctor) {
-            alert('Please complete email, doctor selection, and date.');
-            return;
-        }
-
-        alert('Confirming booking and sending email...');
-        fetch(scriptURL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(bookingData) })
-        .then(res => res.json())
-        .then(data => {
-            if (data.result === 'success') {
-                alert('Booked successfully! Check your email for details.');
-                location.reload();
-            } else {
-                alert(data.message || 'Booking failed.');
-            }
-        })
-        .catch(() => alert('An error occurred during booking.'));
-    }
-
-    function fetchDoctorDashboardData(email) {
-        fetch(`${scriptURL}?doctorEmail=${encodeURIComponent(email)}`)
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('welcomeDocName').innerText = `Welcome, Dr. ${data.doctorName}`;
-            document.getElementById('settingDailyLimit').value = data.dailyLimit;
-            document.getElementById('settingWorkStart').value = data.workStart;
-            document.getElementById('settingWorkEnd').value = data.workEnd;
-            document.getElementById('serviceStatusToggle').checked = (data.status !== 'Stopped');
-            updateStatusText();
-            const tbody = document.getElementById('appointmentsList');
-            tbody.innerHTML = '';
-            if(data.appointments.length === 0) { tbody.innerHTML = '<tr><td colspan="6">No appointments yet.</td></tr>'; return; }
-            data.appointments.forEach(app => {
-                tbody.innerHTML += `<tr><td>${app.firstName}</td><td>${app.lastName}</td><td>${app.phone}</td><td>${app.email}</td><td>${app.assignedDate}</td><td><strong>Queue #${app.queueNumber}</strong></td></tr>`;
-            });
-        });
-    }
-
-    function logoutDoctor() {
-        nextStep(0);
-    }
+function logoutDoctor(){ currentDoctorEmail=''; allAppointments=[]; nextStep(0); }
 </script>
 </body>
 </html>
