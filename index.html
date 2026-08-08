@@ -96,7 +96,10 @@ th{background:var(--primary);color:#fff;position:sticky;top:0}
   <h2 style="font-size:32px;margin-bottom:12px">🏥 Medical Appointment Booking</h2>
   <p style="color:#64748b;font-size:16px;margin-bottom:32px">Select your option below to proceed.</p>
   <div style="max-width:380px;margin:auto">
-    <button class="btn-primary" onclick="nextStep(1)" style="padding:18px;font-size:16px;margin-bottom:14px">📋 Book an Appointment</button>
+    <button id="btn-book-start" class="btn-primary" onclick="nextStep(1)" style="padding:18px;font-size:16px;margin-bottom:14px">📋 Book an Appointment</button>
+    <div id="boot-warning" style="display:none;margin-top:14px;background:#fef9c3;border:1px solid #fde68a;border-radius:10px;padding:11px 16px;font-size:13px;color:#92400e">
+      ⚠️ Could not load location data. Please check your internet connection and <a href="" style="color:#92400e;font-weight:700">refresh the page</a>.
+    </div>
     <br>
     <button class="btn-link" onclick="showLoginSection()" style="font-size:16px">👨‍⚕️ Are you a Doctor? Log in</button>
   </div>
@@ -300,8 +303,8 @@ th{background:var(--primary);color:#fff;position:sticky;top:0}
 </div>
 
 <script>
-const scriptURL = 'https://script.google.com/macros/s/AKfycbyh5xi-mjRfQGrMEVHr4csbC4ZfC3Plhuy6UPVkZUbPQneCMplNmufduSCurPQ8Hmxt/exec';
-let settingsData = [], specialtiesData = [];
+const scriptURL = 'https://script.google.com/macros/s/AKfycbyHn74o3TNxJI0NUMNN5qqTuxEuPrBgzyaynw09cqpE_L7uuT15dNxU2-cUxgbfcsFm/exec';
+let regionsData = [], specialtiesData = [];
 let currentDoctorEmail = '';
 let allAppointments = []; // كل مواعيد الطبيب
 let selectedDoctorName = '';
@@ -309,23 +312,69 @@ let selectedDoctorActive = true;
 let currentFilter = 'ALL';
 
 // ── Boot ──────────────────────────────────────────────────
+// جلب JSON مع retry تلقائي (يعالج مشكلة Apps Script يرجع HTML أول مرة)
+async function fetchJSON(url, retries = 4, delay = 1200) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const r = await fetch(url + '&_t=' + Date.now()); // منع cache
+      const text = await r.text();
+      // Apps Script أحياناً يرجع HTML صفحة redirect — نتحقق
+      const trimmed = text.trim();
+      if (!trimmed.startsWith('[') && !trimmed.startsWith('{')) {
+        if (i < retries - 1) { await new Promise(r => setTimeout(r, delay)); continue; }
+        return [];
+      }
+      return JSON.parse(trimmed);
+    } catch(e) {
+      if (i < retries - 1) await new Promise(r => setTimeout(r, delay));
+    }
+  }
+  return [];
+}
+
+function setLoadingState(on) {
+  const btn0 = document.getElementById('btn-book-start');
+  if (btn0) {
+    btn0.disabled = on;
+    btn0.innerHTML = on
+      ? '<span class="spinner"></span>Loading data...'
+      : '📋 Book an Appointment';
+  }
+}
+
+setLoadingState(true);
+
 Promise.all([
-  fetch(`${scriptURL}?action=get_settings`).then(r=>r.json()),
-  fetch(`${scriptURL}?action=get_specialties`).then(r=>r.json())
+  fetchJSON(`${scriptURL}?action=get_regions`),
+  fetchJSON(`${scriptURL}?action=get_specialties`)
 ]).then(([settings, specs]) => {
-  settingsData  = settings;
-  specialtiesData = specs;
-  let states = [...new Set(settings.map(i=>i[0]))];
-  populateSel('state', states);
-  populateSel('docState', states);
-  populateSel('specialty', specs);
-  populateSel('docSpecialty', specs);
-}).catch(()=>{});
+  regionsData    = Array.isArray(settings) ? settings : [];
+  specialtiesData = Array.isArray(specs)    ? specs    : [];
+
+  const states = [...new Set(regionsData.map(i => i[0]).filter(Boolean))];
+  populateSel('state',      states);
+  populateSel('docState',   states);
+  populateSel('specialty',  specialtiesData);
+  populateSel('docSpecialty', specialtiesData);
+
+  setLoadingState(false);
+
+  if (states.length === 0) {
+    document.getElementById('boot-warning').style.display = 'block';
+  }
+}).catch(() => {
+  setLoadingState(false);
+  document.getElementById('boot-warning').style.display = 'block';
+});
 
 // ── Helpers ───────────────────────────────────────────────
 function populateSel(id, items) {
-  const s = document.getElementById(id); if(!s) return;
-  s.innerHTML = '<option value="">Select</option>' + items.map(i=>`<option value="${i}">${i}</option>`).join('');
+  const s = document.getElementById(id); if (!s) return;
+  const opts = (items || []).map(i => {
+    const v = String(i).trim();
+    return v ? `<option value="${v}">${v}</option>` : '';
+  }).join('');
+  s.innerHTML = '<option value="">— Select —</option>' + opts;
 }
 function nextStep(n) {
   document.querySelectorAll('.step').forEach(e=>e.classList.remove('active'));
@@ -360,23 +409,48 @@ function setBtnLoading(id, on, label) {
 }
 
 // ── Location cascades ─────────────────────────────────────
+// regionsData row: [State(0), Circle(1), Municipality(2), District(3)]
+
 function updateCircles() {
-  const st=document.getElementById('state').value;
-  populateSel('circle',[...new Set(settingsData.filter(i=>i[0]===st).map(i=>i[1]))]);
-  populateSel('municipality',[]);
+  const st = document.getElementById('state').value;
+  if (!st) return;
+  const circles = [...new Set(
+    regionsData.filter(i => String(i[0]).trim() === st.trim()).map(i => String(i[1]).trim()).filter(Boolean)
+  )];
+  populateSel('circle', circles);
+  populateSel('municipality', []);
 }
+
 function updateMunicipalities() {
-  const st=document.getElementById('state').value, ci=document.getElementById('circle').value;
-  populateSel('municipality',[...new Set(settingsData.filter(i=>i[0]===st&&i[1]===ci).map(i=>i[2]))]);
+  const st = document.getElementById('state').value;
+  const ci = document.getElementById('circle').value;
+  if (!st || !ci) return;
+  const munis = [...new Set(
+    regionsData.filter(i => String(i[0]).trim() === st.trim() && String(i[1]).trim() === ci.trim())
+                .map(i => String(i[2]).trim()).filter(Boolean)
+  )];
+  populateSel('municipality', munis);
 }
+
 function updateDocCircles() {
-  const st=document.getElementById('docState').value;
-  populateSel('docCircle',[...new Set(settingsData.filter(i=>i[0]===st).map(i=>i[1]))]);
-  populateSel('docMunicipality',[]);
+  const st = document.getElementById('docState').value;
+  if (!st) return;
+  const circles = [...new Set(
+    regionsData.filter(i => String(i[0]).trim() === st.trim()).map(i => String(i[1]).trim()).filter(Boolean)
+  )];
+  populateSel('docCircle', circles);
+  populateSel('docMunicipality', []);
 }
+
 function updateDocMunicipalities() {
-  const st=document.getElementById('docState').value, ci=document.getElementById('docCircle').value;
-  populateSel('docMunicipality',[...new Set(settingsData.filter(i=>i[0]===st&&i[1]===ci).map(i=>i[2]))]);
+  const st = document.getElementById('docState').value;
+  const ci = document.getElementById('docCircle').value;
+  if (!st || !ci) return;
+  const munis = [...new Set(
+    regionsData.filter(i => String(i[0]).trim() === st.trim() && String(i[1]).trim() === ci.trim())
+                .map(i => String(i[2]).trim()).filter(Boolean)
+  )];
+  populateSel('docMunicipality', munis);
 }
 
 // ── Validation steps ──────────────────────────────────────
